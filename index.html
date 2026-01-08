@@ -22,7 +22,14 @@
         .balance-box { background: #fff; border: 2px solid #28a745; color: #28a745; font-size: 16px; height: 38px; font-weight: bold; }
         .remarks-area { height: 75px !important; resize: none; font-weight: bold; color: #0b2447; background-color: #ffeb3b !important; border: 1px solid #999; }
         .building-section { display: none; border-top: 3px double #999; margin-top: 15px; padding-top: 10px; }
-        @media print { .d-print-none, .btn, #login-overlay, #home-screen { display: none !important; } .form-container { border: none; box-shadow: none; width: 100%; background: white !important; display: block !important; } }
+
+        @media print { 
+            .d-print-none, .btn, #login-overlay, #home-screen { display: none !important; } 
+            .form-container { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; display: block !important; } 
+            body { background: white !important; }
+            fieldset { background: #fff !important; }
+            .remarks-area { background-color: #fff !important; border: 1px solid #000 !important; }
+        }
     </style>
 </head>
 <body>
@@ -162,9 +169,8 @@
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxjWCwdUid2jTgW2p43gLTd07i-3T-cTYsokJy8vhW3syxDCSfwAFESw6BmveWZ1fG7iA/exec";
 let CURRENT_USER = "";
 
-// KOMPLETONG LISTAHAN BASE SA IMAGE (Walang bawas)
 const TAX_DATABASE = {
-    "AAM": "BRANCH", "ACD": "BRANCH", "ACE": "2%", "ACL 1": "5%", "ACL 2": "3.50%", "ACM": "3%", "ACN": "2%", "ACR": "3%", "AED": "BRANCH", "AGL": "2.50%", "AMC": "3%", "AME": "2%", "AMS": "2%", "AMV": "3%", "AVA": "2.50%", "AVS": "2%", "AVT": "2%", "BBE": "3%", "BHS": "5%", "BME": "2.50%", "BPR": "2%", "BRB": "2%", "BRM": "BRANCH", "CCL": "2%", "CDB": "5%", "CDE": "3%", "CDS": "BRANCH", "CGL": "2%", "CHR": "2%", "CLB": "2%", "CLP": "NO TD", "CMD": "BRANCH", "CMS": "2%", "CPB": "2%", "CRC": "2%", "CRE": "3%", "CSG": "2%", "CTL": "2%", "CUE": "2.50%", "CVA": "2.50%", "CVB": "2.10%", "CVC": "2%", "CVF": "4%", "CVL": "2%", "CVS": "2.10%", "CVY": "2%", "DAR": "3%", "DCS": "2%", "DJR": "2%", "EAS": "2%", "EBA": "2%", "EGC": "2%", "EGE": "2.50%", "EGV": "2%", "EPV": "2%", "ERE": "2%", "ERV": "2%", "GBB": "NO TD", "GHP": "2%", "GLN": "2%", "GMB": "2%", "GMD": "2%", "GME": "2.50%", "GMI": "BRANCH", "GMN": "2%", "GMT": "2%", "GPH": "2%", "GPP": "3%", "GPS": "2%", "GPT": "2%", "GRE": "2%", "GRT": "2%", "GRV": "3%", "GTE": "2%", "GVB": "2%", "GVW": "3%", "GWB": "2.10%", "GWE": "2.50%", "GWN": "2%", "GWS": "2.50%", "HRA": "2%", "HSP": "4%", "HVI": "BRANCH", "KVH": "2.50%", "LAN": "BRANCH", "LAP": "2%", "LBT": "DON'T COU", "LCE": "BRANCH", "LHC": "2%", "LHL": "2.60%", "LMR": "2.10%", "LMV": "BRANCH", "LPR": "3%", "LRC": "2%", "LRE": "2%", "LRS": "NO TD", "LRT": "BRANCH", "LSC": "NO TD", "LVE": "2%", "LWC": "2%", "LWE": "2%", "MBD": "BRANCH", "MGS": "2%", "MIE": "5%", "MLL": "NO TD", "MMR": "2%", "MNV": "2%", "MPE": "2%", "MPG": "2%", "MPN": "2.10%", "MPS": "2%", "MRD": "BRANCH", "MRE": "2.50%", "MRP": "4%", "MRT": "2%", "MSV": "2%", "MVB": "2.10%", "MVD": "BRANCH", "MVE": "2%", "MVM": "NO TD", "MVT": "2%", "MWE": "2%", "NCB": "2%", "NHC": "BRANCH", "NPB": "NO TD", "NPC": "2.50%", "NPE": "3%", "NVI": "BRANCH", "NVM": "NO TD", "NVP": "NO TD", "NVT": "2%", "NWE": "3%", "ORD": "BRANCH", "ORE": "2%", "ORO": "5%", "OTP": "2.50%", "OVG": "2.50%", "PAE": "2%", "PAL": "2%", "PCE": "2.50%", "PDP": "2%", "PDS": "2.50%", "PGS": "2.50%", "PHB": "2.10%", "PHS": "2.50%", "PRL": "2%", "PVB": "2.50%", "PVD": "BRANCH", "PVE": "2.50%", "PVH": "2.50%", "PVR": "2%", "PVS": "2.50%", "PWE": "2.50%", "PWG": "3%", "RDC": "2%", "RIZ": "2%", "RME": "2%", "RMS": "2%", "RNW": "2.10%", "RVC": "2%", "RWT": "2%", "SBP": "3%", "SBR": "3%", "SCB": "2%", "SCD": "2%", "SCL": "2%", "SCS": "NO TD", "SFE": "2%", "SGB": "3%", "SGD": "BRANCH", "SGE": "", "SGI": "BRANCH", "SGK": "2.50%", "SGP": "NO TD", "SHE": "2.50%", "SLE": "2.50%", "SLR": "2%", "SMD": "BRANCH", "SOD": "BRANCH", "SPE": "2%", "SPL": "2%", "SSE": "2%", "SSL": "2%", "STG": "2.50%", "STR": "2%", "STT": "2%", "SVD": "BRANCH", "SVR": "3%", "TES": "2%", "TGE": "3%", "TVT": "2%", "VCH": "2.50%", "VCT": "2%", "VPE": "2.50%", "VPP": "2.50%", "VRC": "3.50%", "VTM": "BRANCH", "VVA": "2%", "VVA/2": "2%", "VVD": "BRANCH", "VVE": "2.50%", "VVL": "5%", "VVM": "5%", "VVN": "2.50%", "VVQ": "2.50%", "VVR": "2%", "VVS": "2%", "VVW": "2.50%", "VWR": "2%", "WGV": "3%", "WRI": "BRANCH", "WRM": "5%", "YSR": "2%", "W": "2%", "W": "NO TD"
+    "AAM": "BRANCH", "ACD": "BRANCH", "ACE": "2%", "ACL 1": "5%", "ACL 2": "3.50%", "ACM": "3%", "ACN": "2%", "ACR": "3%", "AED": "BRANCH", "AGL": "2.50%", "AMC": "3%", "AME": "2%", "AMS": "2%", "AMV": "3%", "AVA": "2.50%", "AVS": "2%", "AVT": "2%", "BBE": "3%", "BHS": "5%", "BME": "2.50%", "BPR": "2%", "BRB": "2%", "BRM": "BRANCH", "CCL": "2%", "CDB": "5%", "CDE": "3%", "CDS": "BRANCH", "CGL": "2%", "CHR": "2%", "CLB": "2%", "CLP": "NO TD", "CMD": "BRANCH", "CMS": "2%", "CPB": "2%", "CRC": "2%", "CRE": "3%", "CSG": "2%", "CTL": "2%", "CUE": "2.50%", "CVA": "2.50%", "CVB": "2.10%", "CVC": "2%", "CVF": "4%", "CVL": "2%", "CVS": "2.10%", "CVY": "2%", "DAR": "3%", "DCS": "2%", "DJR": "2%", "EAS": "2%", "EBA": "2%", "EGC": "2%", "EGE": "2.50%", "EGV": "2%", "EPV": "2%", "ERE": "2%", "ERV": "2%", "GBB": "NO TD", "GHP": "2%", "GLN": "2%", "GMB": "2%", "GMD": "2%", "GME": "2.50%", "GMI": "BRANCH", "GMN": "2%", "GMT": "2%", "GPH": "2%", "GPP": "3%", "GPS": "2%", "GPT": "2%", "GRE": "2%", "GRT": "2%", "GRV": "3%", "GTE": "2%", "GVB": "2%", "GVW": "3%", "GWB": "2.10%", "GWE": "2.50%", "GWN": "2%", "GWS": "2.50%", "HRA": "2%", "HSP": "4%", "HVI": "BRANCH", "KVH": "2.50%", "LAN": "BRANCH", "LAP": "2%", "LBT": "DON'T COU", "LCE": "BRANCH", "LHC": "2%", "LHL": "2.60%", "LMR": "2.10%", "LMV": "BRANCH", "LPR": "3%", "LRC": "2%", "LRE": "2%", "LRS": "NO TD", "LRT": "BRANCH", "LSC": "NO TD", "LVE": "2%", "LWC": "2%", "LWE": "2%", "MBD": "BRANCH", "MGS": "2%", "MIE": "5%", "MLL": "NO TD", "MMR": "2%", "MNV": "2%", "MPE": "2%", "MPG": "2%", "MPN": "2.10%", "MPS": "2%", "MRD": "BRANCH", "MRE": "2.50%", "MRP": "4%", "MRT": "2%", "MSV": "2%", "MVB": "2.10%", "MVD": "BRANCH", "MVE": "2%", "MVM": "NO TD", "MVT": "2%", "MWE": "2%", "NCB": "2%", "NHC": "BRANCH", "NPB": "NO TD", "NPC": "2.50%", "NPE": "3%", "NVI": "BRANCH", "NVM": "NO TD", "NVP": "NO TD", "NVT": "2%", "NWE": "3%", "ORD": "BRANCH", "ORE": "2%", "ORO": "5%", "OTP": "2.50%", "OVG": "2.50%", "PAE": "2%", "PAL": "2%", "PCE": "2.50%", "PDP": "2%", "PDS": "2.50%", "PGS": "2.50%", "PHB": "2.10%", "PHS": "2.50%", "PRL": "2%", "PVB": "2.50%", "PVD": "BRANCH", "PVE": "2.50%", "PVH": "2.50%", "PVR": "2%", "PVS": "2.50%", "PWE": "2.50%", "PWG": "3%", "RDC": "2%", "RIZ": "2%", "RME": "2%", "RMS": "2%", "RNW": "2.10%", "RVC": "2%", "RWT": "2%", "SBP": "3%", "SBR": "3%", "SCB": "2%", "SCD": "2%", "SCL": "2%", "SCS": "NO TD", "SFE": "2%", "SGB": "3%", "SGD": "BRANCH", "SGE": "", "SGI": "BRANCH", "SGK": "2.50%", "SGP": "NO TD", "SHE": "2.50%", "SLE": "2.50%", "SLR": "2%", "SMD": "BRANCH", "SOD": "BRANCH", "SPE": "2%", "SPL": "2%", "SSE": "2%", "SSL": "2%", "STG": "2.50%", "STR": "2%", "STT": "2%", "SVD": "BRANCH", "SVR": "3%", "TES": "2%", "TGE": "3%", "TVT": "2%", "VCH": "2.50%", "VCT": "2%", "VPE": "2.50%", "VPP": "2.50%", "VRC": "3.50%", "VTM": "BRANCH", "VVA": "2%", "VVA/2": "2%", "VVD": "BRANCH", "VVE": "2.50%", "VVL": "5%", "VVM": "5%", "VVN": "2.50%", "VVQ": "2.50%", "VVR": "2%", "VVS": "2%", "VVW": "2.50%", "VWR": "2%", "WGV": "3%", "WRI": "BRANCH", "WRM": "5%", "YSR": "2%", "W": "2%"
 };
 
 function getTaxInfo(lotText) {
@@ -172,11 +178,16 @@ function getTaxInfo(lotText) {
     for (let key in TAX_DATABASE) {
         if (lot.startsWith(key)) return TAX_DATABASE[key];
     }
-    return "2%"; // Default
+    return "2%";
 }
 
 function triggerGlobalRecalc() {
-    document.querySelectorAll('.wo-charge').forEach(el => calcWithoutOR(el));
+    const lotVal = document.getElementById('lotDetails').value;
+    const taxRate = getTaxInfo(lotVal);
+    document.querySelectorAll('.wo-tax-pct').forEach(el => {
+        el.value = taxRate;
+        calcWithoutOR(el);
+    });
     updateGrandTotal();
 }
 
@@ -264,10 +275,11 @@ function addRow(id) {
         <td><input type="text" class="form-control form-control-sm w-total ${id.includes('Land')?'land-t-field':'build-t-field'} readonly-field" readonly value="0.00"></td>
         <td class="d-print-none text-center"><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">×</button></td>
     </tr>`;
+    
     const woT = `<tr>
         <td><input type="text" class="form-control form-control-sm wo-charge" oninput="calcWithoutOR(this)"></td>
         <td><input type="text" class="form-control form-control-sm wo-av" oninput="formatInputCurrency(this); calcWithoutOR(this)"></td>
-        <td><input type="text" class="form-control form-control-sm wo-tax-pct readonly-field" readonly></td>
+        <td><input type="text" class="form-control form-control-sm wo-tax-pct readonly-field" readonly onclick="this.readOnly=false; this.classList.remove('readonly-field')" onblur="this.readOnly=true; this.classList.add('readonly-field')" oninput="calcWithoutOR(this)"></td>
         <td><input type="text" class="form-control form-control-sm wo-td readonly-field" readonly></td>
         <td><input type="text" class="form-control form-control-sm wo-p-pct readonly-field" readonly></td>
         <td><input type="text" class="form-control form-control-sm wo-p-amt readonly-field" readonly></td>
@@ -276,7 +288,12 @@ function addRow(id) {
     </tr>`;
     div.innerHTML = id.includes('Without') ? woT : wT; 
     document.getElementById(id).appendChild(div.querySelector('tr'));
-    if(id.includes('Without')) triggerGlobalRecalc();
+    
+    if(id.includes('Without')) {
+        const tr = document.getElementById(id).lastElementChild;
+        tr.querySelector('.wo-tax-pct').value = getTaxInfo(document.getElementById('lotDetails').value);
+        triggerGlobalRecalc();
+    }
 }
 
 function calcWithOR(el) {
@@ -320,16 +337,10 @@ function calcWithoutOR(el) {
     const tr = el.closest('tr');
     const rangeInput = tr.querySelector('.wo-charge').value.trim(); 
     const av = parseNum(tr.querySelector('.wo-av').value);
-    const lotDetails = document.getElementById('lotDetails').value;
-    const taxInfo = getTaxInfo(lotDetails);
-    
-    // I-display ang Info (%, BRANCH, NO TD, etc.)
-    tr.querySelector('.wo-tax-pct').value = taxInfo;
-    
-    // Kumuha ng numeric rate. Kung hindi number (e.g. BRANCH), 0 ang rate.
+    const taxInfo = tr.querySelector('.wo-tax-pct').value; 
     const numericRate = parseFloat(taxInfo.replace('%','')) || 0;
     const taxRate = numericRate / 100;
-
+    
     let multiplier = 1; let quarterCount = 4; 
     let year = parseInt(rangeInput);
     if (rangeInput.includes('-') && !rangeInput.includes('(')) {
@@ -347,7 +358,6 @@ function calcWithoutOR(el) {
     const tdAmt = ((av * taxRate) * multiplier / 4) * quarterCount;
     let pPct = (year <= 2023) ? 0.72 : (year === 2024) ? 0.48 : (year === 2025) ? 0.24 : 0;
     const pAmt = tdAmt * pPct;
-
     tr.querySelector('.wo-p-pct').value = (pPct * 100).toFixed(0) + "%";
     tr.querySelector('.wo-td').value = fcy(tdAmt);
     tr.querySelector('.wo-p-amt').value = fcy(pAmt);
@@ -419,17 +429,17 @@ function restoreTable(id, rows) { const tb = document.getElementById(id); tb.inn
 
 function downloadPDF() {
     const element = document.getElementById('printable-area');
-    const lot = document.getElementById('lotDetails').value;
-    const prep = document.getElementById('preparedBy').value;
-    const date = document.getElementById('compDate').value;
-    const rawFileName = lot + "_" + prep + "_" + date;
-    const finalFileName = rawFileName.replace(/[\\/:*?"<>|]/g, '');
+    const lot = document.getElementById('lotDetails').value || "LOT";
+    const prep = document.getElementById('preparedBy').value || "PREP";
+    const date = document.getElementById('compDate').value.replace(/\//g, '-') || "DATE";
+    const finalFileName = `${lot}_${prep}_${date}.pdf`;
+
     const opt = {
-        margin: 0.2,
-        filename: finalFileName + '.pdf',
-        image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 4, useCORS: true, dpi: 300, letterRendering: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape', compress: true }
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: finalFileName,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
     html2pdf().set(opt).from(element).save();
 }
