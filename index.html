@@ -162,11 +162,9 @@
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxjWCwdUid2jTgW2p43gLTd07i-3T-cTYsokJy8vhW3syxDCSfwAFESw6BmveWZ1fG7iA/exec";
 let CURRENT_USER = "";
 
-// Universal Formatter (Adds commas and decimals)
 const fcy = (n) => new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 const parseNum = (s) => parseFloat(String(s).replace(/,/g, '')) || 0;
 
-// Input Masking (Formatting while typing)
 function formatInputCurrency(el) {
     let cursor = el.selectionStart;
     let oldLen = el.value.length;
@@ -225,7 +223,7 @@ async function renderListFromCloud() {
         list.innerHTML = "";
         data.forEach((row) => {
             const rowNumber = row[5];
-            const formattedTotal = fcy(parseNum(row[3])); // FORMATTED SA HOME
+            const formattedTotal = fcy(parseNum(row[3])); 
             list.innerHTML += `<tr>
                 <td>${new Date(row[0]).toLocaleString()}</td>
                 <td><b>${row[1]}</b></td>
@@ -349,7 +347,6 @@ function updateGrandTotal() {
     document.getElementById('grandTotal').value = fcy((lSum + bSum) - adv);
 }
 
-// Support functions (Save, Load, PDF, etc.)
 async function saveRecord() {
     const lot = document.getElementById('lotDetails').value;
     const existingRow = document.getElementById('editRowNumber').value;
@@ -402,7 +399,21 @@ function restoreTable(id, rows) { const tb = document.getElementById(id); tb.inn
 
 function downloadPDF() {
     const element = document.getElementById('printable-area');
-    html2pdf().set({ margin: 0.2, filename: 'Tax_Computation.pdf', jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' } }).from(element).save();
+    const lot = document.getElementById('lotDetails').value;
+    const prep = document.getElementById('preparedBy').value;
+    const date = document.getElementById('compDate').value;
+
+    const rawFileName = lot + "_" + prep + "_" + date;
+    const finalFileName = rawFileName.replace(/[\\/:*?"<>|]/g, '');
+
+    const opt = {
+        margin: 0.2,
+        filename: finalFileName + '.pdf',
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { scale: 4, useCORS: true, dpi: 300, letterRendering: true },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape', compress: true }
+    };
+    html2pdf().set(opt).from(element).save();
 }
 </script>
 </body>
