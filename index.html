@@ -162,17 +162,17 @@
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxjWCwdUid2jTgW2p43gLTd07i-3T-cTYsokJy8vhW3syxDCSfwAFESw6BmveWZ1fG7iA/exec";
 let CURRENT_USER = "";
 
-// TAX RATE LOOKUP TABLE (Base sa iyong image)
-const TAX_RATES = {
-    "ACE": 2, "ACL 1": 5, "ACL 2": 3.5, "ACM": 3, "ACN": 2, "ACR": 3, "AGL": 2.5, "AMC": 3, "AME": 2, "AMS": 2, "AMV": 3, "AVA": 2.5, "AVS": 2, "AVT": 2, "BBE": 3, "BHS": 5, "BME": 2.5, "BPR": 2, "BRB": 2, "CDB": 5, "CDE": 3, "CGL": 2, "CHR": 2, "CLB": 2, "CMS": 2, "CPB": 2, "CRC": 2, "CRE": 3, "CSG": 2, "CTL": 2, "CUE": 2.5, "CVA": 2.5, "CVB": 2.10, "CVC": 2, "CVF": 4, "CVL": 2, "CVS": 2.10, "CVY": 2, "DAR": 3, "DCS": 2, "DJR": 2, "EAS": 2, "EBA": 2, "EGC": 2, "EGE": 2.5, "EGV": 2, "EPV": 2, "ERE": 2, "ERV": 2, "GHP": 2, "GLN": 2, "GMB": 2, "GMD": 2, "GME": 2.5, "GMN": 2, "GMT": 2, "GPH": 2, "GPP": 3, "GPS": 2, "GPT": 2, "GRE": 2, "GRT": 2, "GRV": 3, "GTE": 2, "GVB": 2, "GVW": 3, "GWB": 2.10, "GWE": 2.5, "GWN": 2, "GWS": 2.5, "HRA": 2, "HSP": 4, "KVH": 2.5, "LAP": 2, "LHC": 2, "LHL": 2.6, "LMR": 2.10, "LPR": 3, "LRC": 2, "LRE": 2, "LVE": 2, "LWC": 2, "LWE": 2, "MGS": 2, "MIE": 5, "MMR": 2, "MNV": 2, "MPE": 2, "MPG": 2, "MPN": 2.10, "MPS": 2, "MRE": 2.5, "MRP": 4, "MRT": 2, "MSV": 2, "MVB": 2.10, "MVE": 2, "MVT": 2, "MWE": 2, "NCB": 2, "NPC": 2.5, "NPE": 3, "NVT": 2, "NWE": 3, "ORE": 2, "ORO": 5, "OTP": 2.5, "OVG": 2.5, "PAE": 2, "PAL": 2, "PCE": 2.5, "PDP": 2, "PDS": 2.5, "PGS": 2.5, "PHB": 2.10, "PHS": 2.5, "PRL": 2, "PVB": 2.5, "PVE": 2.5, "PVH": 2.5, "PVR": 2, "PVS": 2.5, "PWE": 2.5, "PWG": 3, "RDC": 2, "RIZ": 2, "RME": 2, "RMS": 2, "RNW": 2.10, "RVC": 2, "RWT": 2, "SBP": 3, "SBR": 3, "SCB": 2, "SCD": 2, "SCL": 2, "SFE": 2, "SGB": 3, "SHE": 2.5, "SLE": 2.5, "SLR": 2, "SPE": 2, "SPL": 2, "SSE": 2, "SSL": 2, "STG": 2.5, "STR": 2, "STT": 2, "SVR": 3, "TES": 2, "TGE": 3, "TVT": 2, "TVT": 2, "VCH": 2, "VCT": 2, "VPE": 2.5, "VPP": 2.5, "VRC": 3.5, "VVA": 2, "VVA/2": 2, "VVE": 2.5, "VVL": 5, "VVM": 5, "VVN": 2.5, "VVQ": 2.5, "VVR": 2, "VVS": 2, "VVW": 2.5, "VWR": 2, "WGV": 3, "WRM": 5, "YSR": 2, "W": 2
+// KOMPLETONG LISTAHAN BASE SA IMAGE (Walang bawas)
+const TAX_DATABASE = {
+    "AAM": "BRANCH", "ACD": "BRANCH", "ACE": "2%", "ACL 1": "5%", "ACL 2": "3.50%", "ACM": "3%", "ACN": "2%", "ACR": "3%", "AED": "BRANCH", "AGL": "2.50%", "AMC": "3%", "AME": "2%", "AMS": "2%", "AMV": "3%", "AVA": "2.50%", "AVS": "2%", "AVT": "2%", "BBE": "3%", "BHS": "5%", "BME": "2.50%", "BPR": "2%", "BRB": "2%", "BRM": "BRANCH", "CCL": "2%", "CDB": "5%", "CDE": "3%", "CDS": "BRANCH", "CGL": "2%", "CHR": "2%", "CLB": "2%", "CLP": "NO TD", "CMD": "BRANCH", "CMS": "2%", "CPB": "2%", "CRC": "2%", "CRE": "3%", "CSG": "2%", "CTL": "2%", "CUE": "2.50%", "CVA": "2.50%", "CVB": "2.10%", "CVC": "2%", "CVF": "4%", "CVL": "2%", "CVS": "2.10%", "CVY": "2%", "DAR": "3%", "DCS": "2%", "DJR": "2%", "EAS": "2%", "EBA": "2%", "EGC": "2%", "EGE": "2.50%", "EGV": "2%", "EPV": "2%", "ERE": "2%", "ERV": "2%", "GBB": "NO TD", "GHP": "2%", "GLN": "2%", "GMB": "2%", "GMD": "2%", "GME": "2.50%", "GMI": "BRANCH", "GMN": "2%", "GMT": "2%", "GPH": "2%", "GPP": "3%", "GPS": "2%", "GPT": "2%", "GRE": "2%", "GRT": "2%", "GRV": "3%", "GTE": "2%", "GVB": "2%", "GVW": "3%", "GWB": "2.10%", "GWE": "2.50%", "GWN": "2%", "GWS": "2.50%", "HRA": "2%", "HSP": "4%", "HVI": "BRANCH", "KVH": "2.50%", "LAN": "BRANCH", "LAP": "2%", "LBT": "DON'T COU", "LCE": "BRANCH", "LHC": "2%", "LHL": "2.60%", "LMR": "2.10%", "LMV": "BRANCH", "LPR": "3%", "LRC": "2%", "LRE": "2%", "LRS": "NO TD", "LRT": "BRANCH", "LSC": "NO TD", "LVE": "2%", "LWC": "2%", "LWE": "2%", "MBD": "BRANCH", "MGS": "2%", "MIE": "5%", "MLL": "NO TD", "MMR": "2%", "MNV": "2%", "MPE": "2%", "MPG": "2%", "MPN": "2.10%", "MPS": "2%", "MRD": "BRANCH", "MRE": "2.50%", "MRP": "4%", "MRT": "2%", "MSV": "2%", "MVB": "2.10%", "MVD": "BRANCH", "MVE": "2%", "MVM": "NO TD", "MVT": "2%", "MWE": "2%", "NCB": "2%", "NHC": "BRANCH", "NPB": "NO TD", "NPC": "2.50%", "NPE": "3%", "NVI": "BRANCH", "NVM": "NO TD", "NVP": "NO TD", "NVT": "2%", "NWE": "3%", "ORD": "BRANCH", "ORE": "2%", "ORO": "5%", "OTP": "2.50%", "OVG": "2.50%", "PAE": "2%", "PAL": "2%", "PCE": "2.50%", "PDP": "2%", "PDS": "2.50%", "PGS": "2.50%", "PHB": "2.10%", "PHS": "2.50%", "PRL": "2%", "PVB": "2.50%", "PVD": "BRANCH", "PVE": "2.50%", "PVH": "2.50%", "PVR": "2%", "PVS": "2.50%", "PWE": "2.50%", "PWG": "3%", "RDC": "2%", "RIZ": "2%", "RME": "2%", "RMS": "2%", "RNW": "2.10%", "RVC": "2%", "RWT": "2%", "SBP": "3%", "SBR": "3%", "SCB": "2%", "SCD": "2%", "SCL": "2%", "SCS": "NO TD", "SFE": "2%", "SGB": "3%", "SGD": "BRANCH", "SGE": "", "SGI": "BRANCH", "SGK": "2.50%", "SGP": "NO TD", "SHE": "2.50%", "SLE": "2.50%", "SLR": "2%", "SMD": "BRANCH", "SOD": "BRANCH", "SPE": "2%", "SPL": "2%", "SSE": "2%", "SSL": "2%", "STG": "2.50%", "STR": "2%", "STT": "2%", "SVD": "BRANCH", "SVR": "3%", "TES": "2%", "TGE": "3%", "TVT": "2%", "VCH": "2.50%", "VCT": "2%", "VPE": "2.50%", "VPP": "2.50%", "VRC": "3.50%", "VTM": "BRANCH", "VVA": "2%", "VVA/2": "2%", "VVD": "BRANCH", "VVE": "2.50%", "VVL": "5%", "VVM": "5%", "VVN": "2.50%", "VVQ": "2.50%", "VVR": "2%", "VVS": "2%", "VVW": "2.50%", "VWR": "2%", "WGV": "3%", "WRI": "BRANCH", "WRM": "5%", "YSR": "2%", "W": "2%", "W": "NO TD"
 };
 
-function getRateFromLot(lotText) {
+function getTaxInfo(lotText) {
     const lot = lotText.trim().toUpperCase();
-    for (let code in TAX_RATES) {
-        if (lot.startsWith(code)) return TAX_RATES[code];
+    for (let key in TAX_DATABASE) {
+        if (lot.startsWith(key)) return TAX_DATABASE[key];
     }
-    return 2; // Default 2%
+    return "2%"; // Default
 }
 
 function triggerGlobalRecalc() {
@@ -285,7 +285,6 @@ function calcWithOR(el) {
     const dateStr = tr.querySelector('.or-date').value; 
     const rawAmt = parseNum(tr.querySelector('.w-amt').value); 
     const inputDate = new Date(dateStr);
-
     let quarterFactor = 1.0;
     if(chargeStr.includes('(')) {
         const qMatch = chargeStr.match(/\((\d)-?(\d)?\)/);
@@ -296,7 +295,6 @@ function calcWithOR(el) {
         }
     }
     const amount = rawAmt * quarterFactor;
-
     if (!isNaN(inputDate)) {
         const inputYear = inputDate.getFullYear(); const inputMonth = inputDate.getMonth() + 1; const inputDay = inputDate.getDate();
         if (inputYear >= 2026) { 
@@ -322,22 +320,23 @@ function calcWithoutOR(el) {
     const tr = el.closest('tr');
     const rangeInput = tr.querySelector('.wo-charge').value.trim(); 
     const av = parseNum(tr.querySelector('.wo-av').value);
-    
-    // DYNAMIC TAX RATE
     const lotDetails = document.getElementById('lotDetails').value;
-    const rateValue = getRateFromLot(lotDetails);
-    tr.querySelector('.wo-tax-pct').value = rateValue + "%";
-    const taxRate = rateValue / 100;
+    const taxInfo = getTaxInfo(lotDetails);
+    
+    // I-display ang Info (%, BRANCH, NO TD, etc.)
+    tr.querySelector('.wo-tax-pct').value = taxInfo;
+    
+    // Kumuha ng numeric rate. Kung hindi number (e.g. BRANCH), 0 ang rate.
+    const numericRate = parseFloat(taxInfo.replace('%','')) || 0;
+    const taxRate = numericRate / 100;
 
     let multiplier = 1; let quarterCount = 4; 
     let year = parseInt(rangeInput);
-
     if (rangeInput.includes('-') && !rangeInput.includes('(')) {
         const years = rangeInput.split('-');
         const sY = parseInt(years[0]), eY = parseInt(years[1]);
         if (!isNaN(sY) && !isNaN(eY) && eY <= 2023) multiplier = (eY - sY) + 1;
     }
-
     if (rangeInput.includes('(')) {
         const matches = rangeInput.match(/\((\d)-?(\d)?\)/);
         if (matches) {
@@ -345,7 +344,6 @@ function calcWithoutOR(el) {
             quarterCount = (eQ - sQ) + 1;
         }
     }
-
     const tdAmt = ((av * taxRate) * multiplier / 4) * quarterCount;
     let pPct = (year <= 2023) ? 0.72 : (year === 2024) ? 0.48 : (year === 2025) ? 0.24 : 0;
     const pAmt = tdAmt * pPct;
