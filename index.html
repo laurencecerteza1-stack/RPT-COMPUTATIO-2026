@@ -69,7 +69,7 @@
         <div class="row g-2 border-bottom pb-2">
             <div class="col-2">
                 <label class="form-label">Date of Computation:</label><input type="text" id="compDate" class="form-control form-control-sm head-field">
-                <label class="form-label mt-1">Lot Details:</label><input type="text" id="lotDetails" class="form-control form-control-sm head-field">
+                <label class="form-label mt-1">Lot Details:</label><input type="text" id="lotDetails" class="form-control form-control-sm head-field" oninput="triggerGlobalRecalc()">
                 <label class="form-label mt-1">Prepared By:</label><input type="text" id="preparedBy" class="form-control form-control-sm head-field" readonly>
                 <label class="form-label mt-1">Full Payment:</label><input type="text" class="form-control form-control-sm head-field">
             </div>
@@ -162,12 +162,28 @@
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxjWCwdUid2jTgW2p43gLTd07i-3T-cTYsokJy8vhW3syxDCSfwAFESw6BmveWZ1fG7iA/exec";
 let CURRENT_USER = "";
 
+// TAX RATE LOOKUP TABLE (Base sa iyong image)
+const TAX_RATES = {
+    "ACE": 2, "ACL 1": 5, "ACL 2": 3.5, "ACM": 3, "ACN": 2, "ACR": 3, "AGL": 2.5, "AMC": 3, "AME": 2, "AMS": 2, "AMV": 3, "AVA": 2.5, "AVS": 2, "AVT": 2, "BBE": 3, "BHS": 5, "BME": 2.5, "BPR": 2, "BRB": 2, "CDB": 5, "CDE": 3, "CGL": 2, "CHR": 2, "CLB": 2, "CMS": 2, "CPB": 2, "CRC": 2, "CRE": 3, "CSG": 2, "CTL": 2, "CUE": 2.5, "CVA": 2.5, "CVB": 2.10, "CVC": 2, "CVF": 4, "CVL": 2, "CVS": 2.10, "CVY": 2, "DAR": 3, "DCS": 2, "DJR": 2, "EAS": 2, "EBA": 2, "EGC": 2, "EGE": 2.5, "EGV": 2, "EPV": 2, "ERE": 2, "ERV": 2, "GHP": 2, "GLN": 2, "GMB": 2, "GMD": 2, "GME": 2.5, "GMN": 2, "GMT": 2, "GPH": 2, "GPP": 3, "GPS": 2, "GPT": 2, "GRE": 2, "GRT": 2, "GRV": 3, "GTE": 2, "GVB": 2, "GVW": 3, "GWB": 2.10, "GWE": 2.5, "GWN": 2, "GWS": 2.5, "HRA": 2, "HSP": 4, "KVH": 2.5, "LAP": 2, "LHC": 2, "LHL": 2.6, "LMR": 2.10, "LPR": 3, "LRC": 2, "LRE": 2, "LVE": 2, "LWC": 2, "LWE": 2, "MGS": 2, "MIE": 5, "MMR": 2, "MNV": 2, "MPE": 2, "MPG": 2, "MPN": 2.10, "MPS": 2, "MRE": 2.5, "MRP": 4, "MRT": 2, "MSV": 2, "MVB": 2.10, "MVE": 2, "MVT": 2, "MWE": 2, "NCB": 2, "NPC": 2.5, "NPE": 3, "NVT": 2, "NWE": 3, "ORE": 2, "ORO": 5, "OTP": 2.5, "OVG": 2.5, "PAE": 2, "PAL": 2, "PCE": 2.5, "PDP": 2, "PDS": 2.5, "PGS": 2.5, "PHB": 2.10, "PHS": 2.5, "PRL": 2, "PVB": 2.5, "PVE": 2.5, "PVH": 2.5, "PVR": 2, "PVS": 2.5, "PWE": 2.5, "PWG": 3, "RDC": 2, "RIZ": 2, "RME": 2, "RMS": 2, "RNW": 2.10, "RVC": 2, "RWT": 2, "SBP": 3, "SBR": 3, "SCB": 2, "SCD": 2, "SCL": 2, "SFE": 2, "SGB": 3, "SHE": 2.5, "SLE": 2.5, "SLR": 2, "SPE": 2, "SPL": 2, "SSE": 2, "SSL": 2, "STG": 2.5, "STR": 2, "STT": 2, "SVR": 3, "TES": 2, "TGE": 3, "TVT": 2, "TVT": 2, "VCH": 2, "VCT": 2, "VPE": 2.5, "VPP": 2.5, "VRC": 3.5, "VVA": 2, "VVA/2": 2, "VVE": 2.5, "VVL": 5, "VVM": 5, "VVN": 2.5, "VVQ": 2.5, "VVR": 2, "VVS": 2, "VVW": 2.5, "VWR": 2, "WGV": 3, "WRM": 5, "YSR": 2, "W": 2
+};
+
+function getRateFromLot(lotText) {
+    const lot = lotText.trim().toUpperCase();
+    for (let code in TAX_RATES) {
+        if (lot.startsWith(code)) return TAX_RATES[code];
+    }
+    return 2; // Default 2%
+}
+
+function triggerGlobalRecalc() {
+    document.querySelectorAll('.wo-charge').forEach(el => calcWithoutOR(el));
+    updateGrandTotal();
+}
+
 const fcy = (n) => new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 const parseNum = (s) => parseFloat(String(s).replace(/,/g, '')) || 0;
 
 function formatInputCurrency(el) {
-    let cursor = el.selectionStart;
-    let oldLen = el.value.length;
     let val = el.value.replace(/,/g, '');
     if(!isNaN(val) && val.length > 0) {
         let parts = val.split('.');
@@ -251,7 +267,7 @@ function addRow(id) {
     const woT = `<tr>
         <td><input type="text" class="form-control form-control-sm wo-charge" oninput="calcWithoutOR(this)"></td>
         <td><input type="text" class="form-control form-control-sm wo-av" oninput="formatInputCurrency(this); calcWithoutOR(this)"></td>
-        <td><input type="text" class="form-control form-control-sm wo-tax-pct" value="2%" oninput="calcWithoutOR(this)"></td>
+        <td><input type="text" class="form-control form-control-sm wo-tax-pct readonly-field" readonly></td>
         <td><input type="text" class="form-control form-control-sm wo-td readonly-field" readonly></td>
         <td><input type="text" class="form-control form-control-sm wo-p-pct readonly-field" readonly></td>
         <td><input type="text" class="form-control form-control-sm wo-p-amt readonly-field" readonly></td>
@@ -260,6 +276,7 @@ function addRow(id) {
     </tr>`;
     div.innerHTML = id.includes('Without') ? woT : wT; 
     document.getElementById(id).appendChild(div.querySelector('tr'));
+    if(id.includes('Without')) triggerGlobalRecalc();
 }
 
 function calcWithOR(el) {
@@ -305,10 +322,15 @@ function calcWithoutOR(el) {
     const tr = el.closest('tr');
     const rangeInput = tr.querySelector('.wo-charge').value.trim(); 
     const av = parseNum(tr.querySelector('.wo-av').value);
-    const taxRate = parseNum(tr.querySelector('.wo-tax-pct').value) / 100;
+    
+    // DYNAMIC TAX RATE
+    const lotDetails = document.getElementById('lotDetails').value;
+    const rateValue = getRateFromLot(lotDetails);
+    tr.querySelector('.wo-tax-pct').value = rateValue + "%";
+    const taxRate = rateValue / 100;
 
-    let year = parseInt(rangeInput); 
     let multiplier = 1; let quarterCount = 4; 
+    let year = parseInt(rangeInput);
 
     if (rangeInput.includes('-') && !rangeInput.includes('(')) {
         const years = rangeInput.split('-');
@@ -402,10 +424,8 @@ function downloadPDF() {
     const lot = document.getElementById('lotDetails').value;
     const prep = document.getElementById('preparedBy').value;
     const date = document.getElementById('compDate').value;
-
     const rawFileName = lot + "_" + prep + "_" + date;
     const finalFileName = rawFileName.replace(/[\\/:*?"<>|]/g, '');
-
     const opt = {
         margin: 0.2,
         filename: finalFileName + '.pdf',
