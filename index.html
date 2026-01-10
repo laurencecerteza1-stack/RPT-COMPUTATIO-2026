@@ -32,12 +32,15 @@
 <div id="login-overlay">
     <div class="login-box" style="max-width:350px;">
         <h6 class="text-center fw-bold mb-3" style="color:#b22222">RPT ACCESS</h6>
-        <div class="mb-2"><label class="form-label">Username</label><input type="text" id="user" class="form-control form-control-sm"></div>
-        <div class="mb-3"><label class="form-label">Password</label><input type="password" id="pass" class="form-control form-control-sm"></div>
+        <div class="mb-2">
+            <label class="form-label">Username</label>
+            <input type="text" id="loginUser" class="form-control form-control-sm"> </div>
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPass" class="form-control form-control-sm"> </div>
         <button class="btn btn-dark btn-sm w-100" onclick="handleLogin()">Login</button>
     </div>
 </div>
-
 <div id="home-screen" style="display:none;">
     <div class="home-box">
         <div id="adminPanel" class="admin-panel">
@@ -211,16 +214,19 @@ function formatInputCurrency(el) {
 }
 
 function handleLogin() {
-    const user = document.getElementById('user').value.trim().toLowerCase();
-    const pass = document.getElementById('pass').value.trim();
+    const user = document.getElementById('loginUser').value.trim().toLowerCase(); // Updated ID
+    const pass = document.getElementById('loginPass').value.trim(); // Updated ID
     const accounts = { "admin":"1234", "laurence":"laurence2026", "ann":"ann2026", "gil":"gil2026", "roselyn":"roselyn2026", "egi":"egi2026", "lourdes":"lourdes2026" };
+    
     if (accounts[user] && accounts[user] === pass) {
         CURRENT_USER = user.toUpperCase();
         document.getElementById('welcomeUser').innerText = "User: " + CURRENT_USER;
         document.getElementById('login-overlay').style.display = 'none';
         if(user === 'admin') document.getElementById('adminPanel').style.display = 'block';
         showHome();
-    } else { alert("Access Denied."); }
+    } else { 
+        alert("Access Denied."); 
+    }
 }
 
 async function generateSummaryReport() {
