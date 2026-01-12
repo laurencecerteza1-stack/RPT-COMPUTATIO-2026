@@ -244,7 +244,7 @@ function formatInputCurrency(el) {
 function handleLogin() {
     const user = document.getElementById('loginUser').value.trim().toLowerCase(); // Updated ID
     const pass = document.getElementById('loginPass').value.trim(); // Updated ID
-    const accounts = { "admin":"1234", "laurence":"laurence2026", "ann":"ann2026", "gil":"gil2026", "roselyn":"roselyn2026", "egi":"egi2026", "lourdes":"lourdes2026", "rhea":"rhea2026", "cj":"cj2026" };
+    const accounts = { "admin":"1234", "laurence":"laurence2026", "ann":"ann2026", "gil":"gil2026", "roselyn":"roselyn2026", "egi":"egi2026", "lenard":"lenard2026", "lourdes":"lourdes2026", "rhea":"rhea2026", "cj":"cj2026" };
     
     if (accounts[user] && accounts[user] === pass) {
         CURRENT_USER = user.toUpperCase();
@@ -672,6 +672,7 @@ function downloadPDF() {
 </script>
 </body>
 </html>
+
 
 
 
