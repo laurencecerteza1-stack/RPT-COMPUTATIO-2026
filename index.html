@@ -526,52 +526,77 @@ function updateGrandTotal() {
 }
 
 async function saveRecord() {
-    const lot = document.getElementById('lotDetails').value;
-    const existingRow = document.getElementById('editRowNumber').value;
-    if(!lot) return alert("Lot Details required!");
+    const lot = document.getElementById('lotDetails').value.trim(); // 
+    const existingRow = document.getElementById('editRowNumber').value; // 
     
-    const saveBtn = document.getElementById('saveBtn');
+    if(!lot) return alert("Lot Details required!"); // 
+    
+    const saveBtn = document.getElementById('saveBtn'); // 
     saveBtn.disabled = true;
-    saveBtn.innerText = "SAVING...";
-
-    const record = {
-        existingRow: existingRow || null,
-        lot: lot, prep: document.getElementById('preparedBy').value, total: document.getElementById('grandTotal').value,
-        fullData: { 
-            heads: Array.from(document.querySelectorAll('.head-field')).map(i => i.value),
-            adv: document.getElementById('advPayment').value,
-            remarks: document.getElementById('remarks').value,
-            buildVisible: document.getElementById('buildingSection').style.display === 'block',
-            wLand: scrapeTable('bodyWithOrLand'), woLand: scrapeTable('bodyWithoutOrLand'),
-            wBuild: scrapeTable('bodyWithOrBuild'), woBuild: scrapeTable('bodyWithoutOrBuild')
-        }
-    };
+    saveBtn.innerText = "CHECKING DUPLICATES...";
 
     try {
-        await fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(record) });
+        // 1. Kumuha muna ng latest data mula sa Cloud para i-check kung may duplicate 
+        const res = await fetch(CLOUD_URL);
+        const cloudData = await res.json();
+
+        // 2. I-check kung may kaparehong Lot Details sa existing records 
+        // Hahayaan lang ang pag-save kung "Edit Mode" at ang kapareho ay ang mismong row na ine-edit 
+        const isDuplicate = cloudData.some(row => 
+            row[1].toString().toUpperCase() === lot.toUpperCase() && 
+            row[5].toString() !== existingRow.toString()
+        );
+
+        if (isDuplicate) {
+            alert("Error: The Lot Details '" + lot + "' already has an existing record in the system. It cannot be saved.");
+            saveBtn.disabled = false;
+            saveBtn.innerText = "SAVE / UPDATE CLOUD";
+            return; // Itigil ang buong function dito 
+        }
+
+        // 3. Kung walang duplicate, ituloy ang normal na pag-save 
+        saveBtn.innerText = "SAVING...";
+        const record = {
+            existingRow: existingRow || null, // 
+            lot: lot, 
+            prep: document.getElementById('preparedBy').value, // 
+            total: document.getElementById('grandTotal').value, // 
+            fullData: { 
+                heads: Array.from(document.querySelectorAll('.head-field')).map(i => i.value), // 
+                adv: document.getElementById('advPayment').value, // 
+                remarks: document.getElementById('remarks').value, // 
+                buildVisible: document.getElementById('buildingSection').style.display === 'block', // 
+                wLand: scrapeTable('bodyWithOrLand'), // 
+                woLand: scrapeTable('bodyWithoutOrLand'), // 
+                wBuild: scrapeTable('bodyWithOrBuild'), // 
+                woBuild: scrapeTable('bodyWithoutOrBuild') // 
+            }
+        };
+
+        // I-save ang record sa Google Sheets 
+        await fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(record) }); // 
         
-        // Refresh list to find the newest row number if it was a new entry
-        const cloudData = await renderListFromCloud();
+        // Refresh ang table list 
+        const updatedData = await renderListFromCloud(); // 
         
         if(!existingRow) {
-            // Kung bago ito, hanapin ang pinaka-latest na row number ng user na ito para gawing "Edit Mode"
-            const myLatest = cloudData.filter(r => r[2] === CURRENT_USER).sort((a,b) => b[5] - a[5])[0];
+            // I-set sa Edit Mode ang bagong save na record 
+            const myLatest = updatedData.filter(r => r[2] === CURRENT_USER).sort((a,b) => b[5] - a[5])[0]; // 
             if(myLatest) {
-                document.getElementById('editRowNumber').value = myLatest[5];
-                document.getElementById('rowDisplay').innerText = myLatest[5];
-                document.getElementById('editStatus').style.display = "block";
+                document.getElementById('editRowNumber').value = myLatest[5]; // 
+                document.getElementById('rowDisplay').innerText = myLatest[5]; // 
+                document.getElementById('editStatus').style.display = "block"; // 
             }
         }
         
-        alert("Success! Data is now in EDIT MODE.");
+        alert("Success! Record saved."); // 
     } catch(e) { 
-        alert("Error saving data."); 
+        alert("Error saving data or checking duplicates."); // 
     } finally {
-        saveBtn.disabled = false;
-        saveBtn.innerText = "SAVE / UPDATE CLOUD";
+        saveBtn.disabled = false; // 
+        saveBtn.innerText = "SAVE / UPDATE CLOUD"; // 
     }
 }
-
 
 
 
@@ -619,5 +644,6 @@ function downloadPDF() {
 </script>
 </body>
 </html>
+
 
 
