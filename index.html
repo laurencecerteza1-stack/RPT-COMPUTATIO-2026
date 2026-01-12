@@ -24,6 +24,34 @@
         .building-section { display: none; border-top: 3px double #999; margin-top: 15px; padding-top: 10px; }
         .admin-panel { background: #f8f9fa; border: 2px dashed #adb5bd; padding: 10px; margin-bottom: 15px; display: none; }
         .report-summary-box { background: white; border: 1px solid #999; padding: 15px; margin-top: 10px; font-size: 12px; }
+        /* I-update ito para maging fixed ang size ng box */
+.home-box { 
+    background: #e0e0e0; 
+    padding: 25px; 
+    border: 1px solid #999;
+    width: 85%; 
+    max-width: 950px; 
+    box-shadow: 4px 4px 15px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh; /* Para hindi lumampas sa screen height */
+}
+
+/* Ito ang magpapagana ng scroll sa loob ng table area */
+.table-responsive {
+    max-height: 400px; /* Taas ng listahan bago mag-scroll */
+    overflow-y: auto; 
+    border: 1px solid #999;
+    background: white;
+}
+
+/* Para manatiling nakikita ang table headers habang nag-scroll */
+#mainTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #ccc !important;
+}
         @media print { .d-print-none, .btn, #login-overlay, #home-screen, .admin-panel { display: none !important; } .form-container { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; display: block !important; } body { background: white !important; } fieldset { background: #fff !important; } .remarks-area { background-color: #fff !important; border: 1px solid #000 !important; } }
     </style>
 </head>
@@ -644,6 +672,7 @@ function downloadPDF() {
 </script>
 </body>
 </html>
+
 
 
 
