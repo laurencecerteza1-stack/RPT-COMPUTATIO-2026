@@ -432,14 +432,12 @@ function calcWithOR(el) {
         return;
     }
 
-    // ===== SAFE DATE PARSE (slashes or dashes) =====
-    const safeDateStr = dateStr.replace(/-/g, '/'); // Convert 12-20-2025 → 12/20/2025
+    const safeDateStr = dateStr.replace(/-/g, '/');
     const [month, day, year] = safeDateStr.split('/').map(Number);
     if (!month || !day || !year) return;
     const d = new Date(year, month - 1, day);
     if (isNaN(d)) return;
 
-    // ===== QUARTER FACTOR FROM CHARGE =====
     let quarterFactor = 1.0;
     const qMatch = chargeStr.match(/\((\d)-?(\d)?\)/);
     if (qMatch) {
@@ -470,16 +468,30 @@ function calcWithOR(el) {
 
     const qFrac = (qNum - 1) * 0.25;
 
-    // ===== DETERMINE BASE YEARS =====
-    let baseValue = 5;
-    if (d >= new Date(2020, 11, 21) && d <= new Date(2021, 11, 20)) baseValue = 5;
-    else if (d >= new Date(2021, 11, 21) && d <= new Date(2022, 11, 20)) baseValue = 4;
-    else if (d >= new Date(2022, 11, 21) && d <= new Date(2023, 11, 20)) baseValue = 3;
-    else if (d >= new Date(2023, 11, 21) && d <= new Date(2024, 11, 20)) baseValue = 2;
-    else if (d >= new Date(2024, 11, 21) && d <= new Date(2025, 11, 20)) baseValue = 1;
+    // ===== DETERMINE FINAL YEARS AND RANGE LABEL =====
+    let finalYears = 0;
+    let rangeLabel = `${year} Q${qNum}-2025`; // Default format
 
-    // ===== FINAL YEARS =====
-    const finalYears = Math.max(0, baseValue - qFrac);
+    // LOGIC PARA SA 2020 PABABA
+    if (d <= new Date(2020, 11, 20)) {
+        finalYears = 1.00; // Fixed na 1
+        rangeLabel = `${year}-2025`; // Ipapakita ang actual year mula sa input
+    } 
+    else if (d >= new Date(2020, 11, 21) && d <= new Date(2021, 11, 20)) {
+        finalYears = Math.max(0, 5 - qFrac);
+    }
+    else if (d >= new Date(2021, 11, 21) && d <= new Date(2022, 11, 20)) {
+        finalYears = Math.max(0, 4 - qFrac);
+    }
+    else if (d >= new Date(2022, 11, 21) && d <= new Date(2023, 11, 20)) {
+        finalYears = Math.max(0, 3 - qFrac);
+    }
+    else if (d >= new Date(2023, 11, 21) && d <= new Date(2024, 11, 20)) {
+        finalYears = Math.max(0, 2 - qFrac);
+    }
+    else if (d >= new Date(2024, 11, 21) && d <= new Date(2025, 11, 20)) {
+        finalYears = Math.max(0, 1 - qFrac);
+    }
 
     // ===== COMPUTATION =====
     const annum = amount * 0.36;
@@ -487,7 +499,7 @@ function calcWithOR(el) {
 
     // ===== ASSIGN VALUES =====
     tr.querySelector('.w-yrs').value = finalYears.toFixed(2);
-    tr.querySelector('.w-range').value = `${year} Q${qNum}-2025`;
+    tr.querySelector('.w-range').value = rangeLabel;
     tr.querySelector('.w-annum').value = fcy(annum);
     tr.querySelector('.w-p-amt').value = fcy(penalty);
     tr.querySelector('.w-total').value = fcy(amount + penalty);
@@ -672,6 +684,7 @@ function downloadPDF() {
 </script>
 </body>
 </html>
+
 
 
 
