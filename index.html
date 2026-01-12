@@ -468,14 +468,14 @@ function calcWithOR(el) {
 
     const qFrac = (qNum - 1) * 0.25;
 
-    // ===== DETERMINE FINAL YEARS AND RANGE LABEL =====
+    // ===== DETERMINE FINAL YEARS =====
     let finalYears = 0;
-    let rangeLabel = `${year} Q${qNum}-2025`; // Default format
+    let rangeLabel = `${year} Q${qNum}-2025`;
 
-    // LOGIC PARA SA 2020 PABABA
+    // CHECK KUNG 2020 PABABA
     if (d <= new Date(2020, 11, 20)) {
-        finalYears = 1.00; // Fixed na 1
-        rangeLabel = `${year}-2025`; // Ipapakita ang actual year mula sa input
+        finalYears = 1.00; // Fixed na 1 agad
+        rangeLabel = `PRE-2020-2025`;
     } 
     else if (d >= new Date(2020, 11, 21) && d <= new Date(2021, 11, 20)) {
         finalYears = Math.max(0, 5 - qFrac);
@@ -684,6 +684,7 @@ function downloadPDF() {
 </script>
 </body>
 </html>
+
 
 
 
