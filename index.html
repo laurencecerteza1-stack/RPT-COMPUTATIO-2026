@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         /* I-update ito para maging fixed ang size ng box */
+/* I-update ang .home-box mo sa CSS */
 .home-box { 
     background: #e0e0e0; 
     padding: 25px; 
@@ -17,10 +18,17 @@
     box-shadow: 4px 4px 15px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
-    max-height: none !important;
-    height: auto !important;
-    overflow: visible !important;
+    /* TANGGALIN ang max-height at overflow dito */
+    height: auto !important; 
 }
+
+/* Idagdag ito para sa screen view lang ang scroll */
+@media screen {
+    .home-box {
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+}   
 
 /* Ito ang magpapagana ng scroll sa loob ng table area */
 .table-responsive {
@@ -801,39 +809,50 @@ function restoreTable(id, rows) {
 }
 
 function downloadPDF() {
-    const ta = document.getElementById('remarks');
-    const printableArea = document.getElementById('printable-area');
-    
-    // Create Temporary Div para sa Remarks (Para hindi maputol ang text)
-    const tempDiv = document.createElement('div');
-    tempDiv.innerText = ta.value;
-    tempDiv.style.cssText = "white-space: pre-wrap; height: auto; min-height: 75px; background-color: #ffeb3b !important; font-weight: bold; font-size: 10px; border: 1px solid #999; padding: 10px; width: 100%; color: #0b2447;";
+    const element = document.getElementById('printable-area');
+    const actionButtons = document.getElementById('action-buttons'); // Siguraduhing may id ito sa HTML
+    const remarksTa = document.getElementById('remarks');
 
-    // Itago ang textarea, ipakita ang Div
-    ta.style.display = 'none';
-    ta.parentNode.appendChild(tempDiv);
+    // 1. Gawing "Visible" ang lahat bago ang snapshot
+    const originalStyle = element.style.height;
+    element.style.height = 'auto';
+    element.style.overflow = 'visible';
+
+    // 2. Itago ang buttons
+    if(actionButtons) actionButtons.style.display = 'none';
+
+    // 3. I-handle ang Remarks (Div conversion para hindi maputol)
+    const tempDiv = document.createElement('div');
+    tempDiv.innerText = remarksTa.value;
+    tempDiv.className = 'form-control remarks-area';
+    tempDiv.style.cssText = "white-space: pre-wrap; height: auto; min-height: 80px; background-color: #ffeb3b !important; padding: 10px; border: 1px solid #999;";
+    remarksTa.style.display = 'none';
+    remarksTa.parentNode.appendChild(tempDiv);
 
     const lot = document.getElementById('lotDetails').value || "LOT";
     const prep = document.getElementById('preparedBy').value || "PREP";
     const date = document.getElementById('compDate').value.replace(/\//g, '-') || "DATE";
-    
+
     const opt = {
-        margin: 0.3,
+        margin: [0.5, 0.5, 0.5, 0.5],
         filename: `${lot}_${prep}_${date}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { 
             scale: 2, 
             useCORS: true,
-            ignoreElements: (el) => el.hasAttribute('data-html2canvas-ignore') // Siguradong ignored ang buttons
+            scrollY: 0 // Siguradong magsisimula sa taas ang snapshot
         },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
 
-    html2pdf().set(opt).from(printableArea).save().then(() => {
+    html2pdf().set(opt).from(element).save().then(() => {
+        // 4. Ibalik sa dati
         tempDiv.remove();
-        ta.style.display = 'block';
+        remarksTa.style.display = 'block';
+        if(actionButtons) actionButtons.style.display = 'block';
+        element.style.height = originalStyle;
     });
-}
+}   
 
 function prepareRemarksForPDF() {
     const ta = document.getElementById('remarks');
