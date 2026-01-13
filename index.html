@@ -17,7 +17,9 @@
     box-shadow: 4px 4px 15px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
-    max-height: 90vh; /* Para hindi lumampas sa screen height */
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
 }
 
 /* Ito ang magpapagana ng scroll sa loob ng table area */
@@ -67,7 +69,7 @@
         /* I-update ang class na ito sa iyong <style> section */
 /* Inayos para kusa itong humaba base sa dami ng text */
 .remarks-area { 
-    min-height: 75px; 
+    min-height: 80px;
     height: auto !important; 
     resize: none; 
     font-weight: bold; 
@@ -849,23 +851,6 @@ function prepareRemarksForPDF() {
         div.remove();
         ta.style.display = 'block';
     };
-}
-
-function downloadPDF() {
-    const cleanup = prepareRemarksForPDF();
-
-    const element = document.getElementById('printable-area');
-    const lot = document.getElementById('lotDetails').value || "LOT";
-    const prep = document.getElementById('preparedBy').value || "PREP";
-    const date = document.getElementById('compDate').value.replace(/\//g, '-') || "DATE";
-
-    html2pdf().set({
-        margin: 0.3,
-        filename: `${lot}_${prep}_${date}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    }).from(element).save().then(() => cleanup());
 }
 
 </script>
