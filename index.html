@@ -35,6 +35,22 @@
     z-index: 10;
     background: #ccc !important;
 }
+.table-scroll {
+    max-height: 420px;        /* pwede mong baguhin */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background: #fff;
+}
+
+/* OPTIONAL: sticky table header */
+.table-scroll thead th {
+    position: sticky;
+    top: 0;
+    background: #d9d9d9;
+    z-index: 2;
+}
+
         body { background-color: #d1d4d7; font-family: Arial, sans-serif; font-size: 10px; }
         #login-overlay, #home-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #d1d4d7; z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-box, .home-box { background: #e0e0e0; padding: 25px; border: 1px solid #999; width: 85%; max-width: 950px; box-shadow: 4px 4px 15px rgba(0,0,0,0.3); }
@@ -48,7 +64,35 @@
         td { padding: 2px !important; vertical-align: middle; }
         .section-total-header { background: #fff; border: 2px solid #333; font-weight: bold; color: #b22222; height: 28px; font-size: 13px; width: 150px; }
         .balance-box { background: #fff; border: 2px solid #28a745; color: #28a745; font-size: 16px; height: 38px; font-weight: bold; }
-        .remarks-area { height: 75px !important; resize: none; font-weight: bold; color: #0b2447; background-color: #ffeb3b !important; border: 1px solid #999; }
+        /* I-update ang class na ito sa iyong <style> section */
+/* Inayos para kusa itong humaba base sa dami ng text */
+.remarks-area { 
+    min-height: 75px; 
+    height: auto !important; 
+    resize: none; 
+    font-weight: bold; 
+    color: #0b2447;
+    background-color: #ffeb3b !important; 
+    border: 1px solid #999;
+    overflow: hidden; /* Itatago ang scrollbar dahil kusa na siyang hahaba */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+/* Siguraduhin na ang class na ito ay walang fixed height */
+.remarks-pdf-fixed {
+    white-space: pre-wrap !important; /* Pinapanatili ang line breaks */
+    word-wrap: break-word !important; /* Pinapuputol ang mahabang salita */
+    height: auto !important;          /* Pinapayagan ang div na humaba */
+    min-height: 75px; 
+    width: 100%;
+    border: 1px solid #999;
+    padding: 8px;
+    background-color: #ffeb3b !important;
+    font-weight: bold;
+    color: #0b2447;
+    font-size: 10px;
+    display: block;
+}
         .building-section { display: none; border-top: 3px double #999; margin-top: 15px; padding-top: 10px; }
         .admin-panel { background: #f8f9fa; border: 2px dashed #adb5bd; padding: 10px; margin-bottom: 15px; display: none; }
         .report-summary-box { background: white; border: 1px solid #999; padding: 15px; margin-top: 10px; font-size: 12px; }
@@ -71,18 +115,67 @@
 </div>
 <div id="home-screen" style="display:none;">
     <div class="home-box">
-        <div id="adminPanel" class="admin-panel">
-            <h6 class="fw-bold text-danger border-bottom pb-1">ADMIN REPORT GENERATOR</h6>
-            <div class="row g-2 align-items-end">
-                <div class="col-md-3"><label class="form-label">Start Date:</label><input type="date" id="reportStart" class="form-control form-control-sm"></div>
-                <div class="col-md-3"><label class="form-label">End Date:</label><input type="date" id="reportEnd" class="form-control form-control-sm"></div>
-                <div class="col-md-4">
-                    <button class="btn btn-dark btn-sm fw-bold" onclick="generateSummaryReport()">GENERATE SUMMARY</button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="printReport()">PRINT REPORT</button>
-                </div>
+        <!-- ================= ADMIN REPORT GENERATOR ================= -->
+<div id="adminPanel" class="card mt-3" style="display:none;">
+    <div class="card-body">
+
+        <h5 class="fw-bold text-danger border-bottom pb-2">
+            ADMIN REPORT GENERATOR
+        </h5>
+
+        <div class="row g-3 align-items-end">
+
+            <!-- START DATE -->
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" id="reportStart" class="form-control">
             </div>
-            <div id="reportResult" class="report-summary-box" style="display:none;"><div id="reportContent"></div></div>
+
+            <!-- END DATE -->
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                <input type="date" id="reportEnd" class="form-control">
+            </div>
+
+            <!-- USER MULTI SELECT (ADMIN ONLY) -->
+            <div class="col-md-4" id="reportUserBox">
+                <label class="form-label">Generate Report For</label>
+                <select id="reportUser" class="form-control" multiple size="4">
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="LAURENCE">LAURENCE</option>
+                    <option value="ANN">ANN</option>
+                    <option value="GIL">GIL</option>
+                    <option value="ROSELYN">ROSELYN</option>
+                    <option value="EGI">EGI</option>
+                    <option value="LOURDES">LOURDES</option>
+                </select>
+                <small class="text-muted">Hold CTRL / SHIFT to select multiple</small>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="col-md-2">
+                <button class="btn btn-dark w-100 mb-2" onclick="generateSummaryReport()">
+                    GENERATE
+                </button>
+                <button class="btn btn-outline-secondary w-100" onclick="printReport()">
+                    PRINT
+                </button>
+            </div>
+
         </div>
+
+        <div id="reportResult" class="mt-4" style="display:none;">
+             <div id="reportScroll" class="table-scroll">
+            <div id="reportContent"></div>
+        </div>
+</div>
+
+
+    </div>
+</div>
+<!-- =========================================================== -->
+
+
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
             <h5 class="fw-bold mb-0 text-dark">RPT COMPUTATION DATABASE</h5>
             <div class="d-flex align-items-center">
@@ -139,22 +232,17 @@
             </div>
             <div class="col-6">
                 <label class="form-label">Remarks:</label>
-                <textarea id="remarks" class="form-control form-control-sm remarks-area">SUBJECT FOR ADJUSTMENT -</textarea>
-                <div class="mt-2 text-end d-print-none">
-                    <button type="button" id="saveBtn" class="btn btn-warning btn-sm fw-bold" onclick="saveRecord()">SAVE / UPDATE CLOUD</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">Print</button>
-                    <button type="button" class="btn btn-success btn-sm" onclick="downloadPDF()">PDF</button>
-                </div>
+                <textarea id="remarks" class="form-control form-control-sm remarks-area" style="overflow:hidden;" oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px';">SUBJECT FOR ADJUSTMENT -</textarea>
             </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light border border-dark">
-            <h6 class="mb-0 fw-bold">LOT COMPUTATION</h6>
-            <div class="d-flex align-items-center"><span class="fw-bold me-2">LOT TOTAL:</span><input type="text" id="landTotal" class="form-control section-total-header text-center" readonly value="0.00"></div>
+            <h6 class="mb-0 fw-bold">LAND COMPUTATION</h6>
+            <div class="d-flex align-items-center"><span class="fw-bold me-2">LAND TOTAL:</span><input type="text" id="landTotal" class="form-control section-total-header text-center" readonly value="0.00"></div>
         </div>
 
         <fieldset>
-            <legend style="background:#5c7bd9; color:white;">YEAR WITH OR (LOT)</legend>
+            <legend style="background:#5c7bd9; color:white;">YEAR WITH OR (LAND)</legend>
             <table class="table table-bordered table-sm mb-0">
                 <thead><tr><th>Yr Charge</th><th>OR Date</th><th>No. Yrs</th><th>Penalty Description</th><th>OR Amount</th><th>36% Annum</th><th>Penalty Amt</th><th>Total Amount</th><th class="d-print-none"></th></tr></thead>
                 <tbody id="bodyWithOrLand"></tbody>
@@ -163,7 +251,7 @@
         </fieldset>
 
         <fieldset>
-            <legend>YEAR WITHOUT OR (LOT)</legend>
+            <legend>YEAR WITHOUT OR (LAND)</legend>
             <table class="table table-bordered table-sm mb-0">
                 <thead><tr><th>Year Range</th><th>Assessed Value</th><th>Tax Due %</th><th>Tax Due Amt</th><th>Penalty %</th><th>Penalty Amt</th><th>Total Amount</th><th class="d-print-none"></th></tr></thead>
                 <tbody id="bodyWithoutOrLand"></tbody>
@@ -199,14 +287,24 @@
         </div>
 
         <div class="row mt-4 align-items-end">
-            <div class="col-6"></div>
+    <div class="col-6"></div>
+    <div class="col-6">
+        <div class="row align-items-center">
+            <div class="col-6 text-end h6 mb-0 fw-bold">GRAND TOTAL DUE:</div>
             <div class="col-6">
-                <div class="row align-items-center">
-                    <div class="col-6 text-end h6 mb-0 fw-bold">GRAND TOTAL DUE:</div>
-                    <div class="col-6"><input type="text" id="grandTotal" class="form-control balance-box text-center" readonly value="0.00"></div>
-                </div>
+                <input type="text" id="grandTotal" class="form-control balance-box text-center" readonly value="0.00">
             </div>
         </div>
+    </div>
+</div>
+
+            <div class="row mt-4">
+                 <div class="col-12 text-end d-print-none border-top pt-3">
+                    <button type="button" id="saveBtn" class="btn btn-warning fw-bold px-4 me-2" onclick="saveRecord()">SAVE / UPDATE CLOUD</button>
+                    <button type="button" class="btn btn-primary px-4 me-2" onclick="window.print()">Print</button>
+                    <button type="button" class="btn btn-success px-4" onclick="downloadPDF()">PDF</button>
+                </div>
+            </div>
     </form>
 </div>
 
@@ -244,7 +342,7 @@ function formatInputCurrency(el) {
 function handleLogin() {
     const user = document.getElementById('loginUser').value.trim().toLowerCase(); // Updated ID
     const pass = document.getElementById('loginPass').value.trim(); // Updated ID
-    const accounts = { "admin":"1234", "laurence":"laurence2026", "ann":"ann2026", "gil":"gil2026", "roselyn":"roselyn2026", "egi":"egi2026","lenard":"lenard2026","cj":"cj2026","rhea":"rhea2026", "lourdes":"lourdes2026" };
+    const accounts = { "admin":"1234", "laurence":"laurence2026", "ann":"ann2026", "gil":"gil2026", "roselyn":"roselyn2026", "egi":"egi2026", "lenard":"lenard2026", "cj":"cj2026", "rhea":"rhea2026", "lourdes":"lourdes2026" };
     
     if (accounts[user] && accounts[user] === pass) {
         CURRENT_USER = user.toUpperCase();
@@ -258,33 +356,49 @@ function handleLogin() {
 }
 
 async function generateSummaryReport() {
-    const start = new Date(document.getElementById('reportStart').value);
-    const end = new Date(document.getElementById('reportEnd').value);
+
+    const startInput = document.getElementById('reportStart').value;
+    const endInput = document.getElementById('reportEnd').value;
+
+    if (!startInput || !endInput)
+        return alert("Please select start and end date.");
+
+    const start = new Date(startInput);
+    const end = new Date(endInput);
     end.setHours(23, 59, 59);
 
-    if (isNaN(start) || isNaN(end)) return alert("Select Dates.");
+    const userSelect = document.getElementById('reportUser');
+    const selectedUsers = Array.from(userSelect.selectedOptions)
+        .map(o => o.value.toUpperCase());
+
+    if (selectedUsers.length === 0)
+        return alert("Select at least one user.");
 
     const res = await fetch(CLOUD_URL);
     const data = await res.json();
 
     const filtered = data.filter(row => {
-        const d = new Date(row[0]);
-        return d >= start && d <= end;
+        const d = new Date(row[0]);      // DATE COLUMN
+        const user = row[2]?.toUpperCase(); // USER COLUMN
+        return d >= start && d <= end && selectedUsers.includes(user);
     });
 
-    if (filtered.length === 0) return alert("No records.");
+    if (filtered.length === 0)
+        return alert("No records found.");
 
     let total = 0;
 
     let html = `
-        <h6><b>SUMMARY REPORT</b></h6>
+        <h6 class="fw-bold">SUMMARY REPORT</h6>
+        <p><b>Date:</b> ${start.toLocaleDateString()} - ${end.toLocaleDateString()}</p>
+        <p><b>Users:</b> ${selectedUsers.join(', ')}</p>
+
         <table class="table table-sm table-bordered">
-            <thead>
+            <thead class="table-light">
                 <tr>
                     <th>Date</th>
-                    <th>Lot</th>
-                    <th>Yr. Cover</th>
                     <th>User</th>
+                    <th>Lot</th>
                     <th class="text-end">Amount</th>
                 </tr>
             </thead>
@@ -292,31 +406,26 @@ async function generateSummaryReport() {
     `;
 
     filtered.forEach(r => {
-        const amt = parseNum(r[3]);
-        total += amt;
-
-        // 🔹 extract Yr. Cover safely
-        let yrCover = "";
-        try {
-            const fd = JSON.parse(r[4]);
-            yrCover = fd.heads?.[4] || "";
-        } catch(e) {}
-
+        total += parseFloat(r[3] || 0); // AMOUNT COLUMN
         html += `
             <tr>
                 <td>${new Date(r[0]).toLocaleDateString()}</td>
-                <td>${r[1]}</td>
-                <td><b>${yrCover}</b></td>
                 <td>${r[2]}</td>
-                <td class="text-end">${fcy(amt)}</td>
+                <td>${r[1]}</td>
+                <td class="text-end">${Number(r[3]).toLocaleString()}</td>
             </tr>
         `;
     });
 
     html += `
             </tbody>
+            <tfoot>
+                <tr class="fw-bold">
+                    <td colspan="3">TOTAL</td>
+                    <td class="text-end">${total.toLocaleString()}</td>
+                </tr>
+            </tfoot>
         </table>
-        <b>TOTAL: ₱ ${fcy(total)}</b>
     `;
 
     document.getElementById('reportContent').innerHTML = html;
@@ -690,18 +799,76 @@ function restoreTable(id, rows) {
 }
 
 function downloadPDF() {
+    const ta = document.getElementById('remarks');
+    const printableArea = document.getElementById('printable-area');
+    
+    // Create Temporary Div para sa Remarks (Para hindi maputol ang text)
+    const tempDiv = document.createElement('div');
+    tempDiv.innerText = ta.value;
+    tempDiv.style.cssText = "white-space: pre-wrap; height: auto; min-height: 75px; background-color: #ffeb3b !important; font-weight: bold; font-size: 10px; border: 1px solid #999; padding: 10px; width: 100%; color: #0b2447;";
+
+    // Itago ang textarea, ipakita ang Div
+    ta.style.display = 'none';
+    ta.parentNode.appendChild(tempDiv);
+
+    const lot = document.getElementById('lotDetails').value || "LOT";
+    const prep = document.getElementById('preparedBy').value || "PREP";
+    const date = document.getElementById('compDate').value.replace(/\//g, '-') || "DATE";
+    
+    const opt = {
+        margin: 0.3,
+        filename: `${lot}_${prep}_${date}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            ignoreElements: (el) => el.hasAttribute('data-html2canvas-ignore') // Siguradong ignored ang buttons
+        },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(printableArea).save().then(() => {
+        tempDiv.remove();
+        ta.style.display = 'block';
+    });
+}
+
+function prepareRemarksForPDF() {
+    const ta = document.getElementById('remarks');
+    const div = document.createElement('div');
+
+    div.innerText = ta.value;
+    div.className = 'form-control remarks-area';
+    div.style.whiteSpace = 'pre-wrap';
+    div.style.height = 'auto';
+
+    ta.style.display = 'none';
+    ta.parentNode.appendChild(div);
+
+    return () => {
+        div.remove();
+        ta.style.display = 'block';
+    };
+}
+
+function downloadPDF() {
+    const cleanup = prepareRemarksForPDF();
+
     const element = document.getElementById('printable-area');
     const lot = document.getElementById('lotDetails').value || "LOT";
     const prep = document.getElementById('preparedBy').value || "PREP";
     const date = document.getElementById('compDate').value.replace(/\//g, '-') || "DATE";
-    const finalFileName = `${lot}_${prep}_${date}.pdf`;
-    const opt = { margin: [0.3, 0.3, 0.3, 0.3], filename: finalFileName, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
-    html2pdf().set(opt).from(element).save();
+
+    html2pdf().set({
+        margin: 0.3,
+        filename: `${lot}_${prep}_${date}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    }).from(element).save().then(() => cleanup());
 }
+
 </script>
 </body>
 </html>
-
-
-
 
