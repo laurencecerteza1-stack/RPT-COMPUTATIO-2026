@@ -365,6 +365,41 @@ function handleLogin() {
     }
 }
 
+function safeParseJSON(str) {
+    if (!str) return null;
+
+    try {
+        // Kung string pa rin at may extra quotes
+        if (typeof str === 'string') {
+            str = str.trim();
+
+            // tanggalin ang outer quotes
+            if (str.startsWith('"') && str.endsWith('"')) {
+                str = str.slice(1, -1).replace(/""/g, '"');
+            }
+        }
+
+        return JSON.parse(str);
+    } catch (e) {
+        console.error("JSON PARSE ERROR:", str);
+        return null;
+    }
+}
+
+
+function extractYearCover(heads = []) {
+
+    // hanapin lang ang eksaktong nakasulat na year cover
+    return heads.find(h =>
+        typeof h === 'string' &&
+        (
+            /\d{4}\(\d+\)-\d{4}/.test(h) ||   // 2024(4)-2026
+            /\d{4}-\d{4}/.test(h) ||          // 2024-2026
+            /^\d{4}$/.test(h)                 // 2026
+        )
+    ) || '';
+}
+
 async function generateSummaryReport() {
 
     const startInput = document.getElementById('reportStart').value;
@@ -410,31 +445,48 @@ async function generateSummaryReport() {
                     <th>User</th>
                     <th>Lot</th>
                     <th class="text-end">Amount</th>
+                    <th>Yr.Cover</th>
+                    <th>STATUS</th>
                 </tr>
             </thead>
             <tbody>
     `;
 
     filtered.forEach(r => {
-        total += parseFloat(r[3] || 0); // AMOUNT COLUMN
-        html += `
-            <tr>
-                <td>${new Date(r[0]).toLocaleDateString()}</td>
-                <td>${r[2]}</td>
-                <td>${r[1]}</td>
-                <td class="text-end">${Number(r[3]).toLocaleString()}</td>
-            </tr>
-        `;
-    });
 
+    total += parseFloat(r[3] || 0);
+
+    const jsonData = safeParseJSON(r[4]); // siguraduhin tamang column
+    const heads = jsonData?.heads || [];
+
+    const yrCover = heads[4] || '';   // EXACT year cover (walang galaw)
+    const hasOR   = heads[3] && heads[3].toString().trim() !== '';
+
+    const status = hasOR
+        ? `WITH OR${yrCover ? ' - ' + yrCover : ''}`
+        : 'NO OR';
+
+    html += `
+        <tr>
+            <td>${new Date(r[0]).toLocaleDateString()}</td>
+            <td>${r[2]}</td>
+            <td>${r[1]}</td>
+            <td class="text-end">${Number(r[3]).toLocaleString()}</td>
+            <td>${yrCover}</td>
+            <td>${status}</td>
+        </tr>
+    `;
+});
     html += `
             </tbody>
             <tfoot>
-                <tr class="fw-bold">
-                    <td colspan="3">TOTAL</td>
-                    <td class="text-end">${total.toLocaleString()}</td>
-                </tr>
-            </tfoot>
+    <tr class="fw-bold">
+        <td colspan="3">TOTAL</td>
+        <td class="text-end">${total.toLocaleString()}</td>
+        <td colspan="2"></td>
+    </tr>
+</tfoot>
+
         </table>
     `;
 
@@ -476,7 +528,7 @@ function createNew() {
 }
 
 async function renderListFromCloud() {
-    const list = document.getElementById('savedList'); list.innerHTML = "Fetching...";
+    const list = document.getElementById('savedList'); list.innerHTML = "Loading...";
     try {
         const res = await fetch(CLOUD_URL); const data = await res.json();
         list.innerHTML = "";
