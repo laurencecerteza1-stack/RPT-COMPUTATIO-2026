@@ -231,7 +231,7 @@
             <div class="col-2">
                 <label class="form-label">Yr. Cover:</label><input type="text" class="form-control form-control-sm head-field">
                 <label class="form-label mt-1">Requested by:</label><input type="text" class="form-control form-control-sm head-field">
-                <label class="form-label mt-1">Contract Date:</label><input type="text" class="form-control form-control-sm head-field">
+                <label class="form-label mt-1">Amendment:</label><input type="text" class="form-control form-control-sm head-field">
                 <label class="form-label mt-1">Adv. RPT Payment:</label><input type="text" id="advPayment" class="form-control form-control-sm" oninput="formatInputCurrency(this); updateGrandTotal();">
             </div>
             <div class="col-2">
@@ -400,6 +400,13 @@ function extractYearCover(heads = []) {
     ) || '';
 }
 
+function safeParseJSON(str) {
+    try {
+        return JSON.parse(str);
+    } catch {
+        return null;
+    }
+}
 async function generateSummaryReport() {
 
     const startInput = document.getElementById('reportStart').value;
@@ -423,8 +430,8 @@ async function generateSummaryReport() {
     const data = await res.json();
 
     const filtered = data.filter(row => {
-        const d = new Date(row[0]);      // DATE COLUMN
-        const user = row[2]?.toUpperCase(); // USER COLUMN
+        const d = new Date(row[0]);       // DATE
+        const user = row[2]?.toUpperCase(); // USER
         return d >= start && d <= end && selectedUsers.includes(user);
     });
 
@@ -444,56 +451,88 @@ async function generateSummaryReport() {
                     <th>Date</th>
                     <th>User</th>
                     <th>Lot</th>
+                    <th>ASSESSED VALUE</th>
+                    <th>Tax Due Amount</th>
+                    <th>OR Amount</th>
                     <th class="text-end">Amount</th>
                     <th>Yr.Cover</th>
                     <th>STATUS</th>
+                    
                 </tr>
             </thead>
             <tbody>
     `;
 
-    filtered.forEach(r => {
+ filtered.forEach(r => {
 
     total += parseFloat(r[3] || 0);
 
-    const jsonData = safeParseJSON(r[4]); // siguraduhin tamang column
+    // JSON DATA
+    const jsonData = safeParseJSON(r[4]);
     const heads = jsonData?.heads || [];
+    const woLand = jsonData?.woLand || [];
+    const wLand = jsonData?.wLand || [];
 
-    const yrCover = heads[4] || '';   // EXACT year cover (walang galaw)
-    const hasOR   = heads[3] && heads[3].toString().trim() !== '';
+    // --- ASSESSED VALUE (Kinuha sa unang row ng woLand, index 1) ---
+    const assessedValue = woLand.length > 0 ? woLand[0][1] : '0'; 
 
-    const status = hasOR
-        ? `WITH OR${yrCover ? ' - ' + yrCover : ''}`
-        : 'NO OR';
+    // --- COMPUTED TAX DUE AMOUNT (Sum ng column index 3 ng lahat ng rows sa woLand) ---
+    let computedTaxDue = 0;
+    if (woLand.length > 0) {
+        woLand.forEach(row => {
+            // Index 3 ang Tax Due (hal. 345.19, 1,380.75)
+            const val = (row[3] || "0").toString().replace(/,/g, '');
+            computedTaxDue += parseFloat(val) || 0;
+        });
+    }
+
+    // --- COMPUTED OR AMOUNT (Sum ng column index 4 ng lahat ng rows sa wLand) ---
+    let computedORAmount = 0;
+    if (wLand.length > 0) {
+        wLand.forEach(row => {
+            // Index 4 ang OR Amount (hal. 1,843.20)
+            const val = (row[4] || "0").toString().replace(/,/g, '');
+            computedORAmount += parseFloat(val) || 0;
+        });
+    }
+
+    // YR COVER
+    const yrCover = (heads[4] || '').toString().trim();
+
+    // STATUS - Base sa wLand
+    const hasWLand = wLand.length > 0 && wLand[0][0] !== "";
+    const statusText = hasWLand ? "WITH OR" : "ESTIMATE";
 
     html += `
         <tr>
-            <td>${new Date(r[0]).toLocaleDateString()}</td>
-            <td>${r[2]}</td>
-            <td>${r[1]}</td>
-            <td class="text-end">${Number(r[3]).toLocaleString()}</td>
-            <td>${yrCover}</td>
-            <td>${status}</td>
+            <td>${new Date(r[0]).toLocaleDateString()}</td> 
+            <td>${r[2]}</td> 
+            <td>${r[1]}</td> 
+            <td>${assessedValue}</td> 
+            <td class="text-end">${computedTaxDue.toLocaleString(undefined, {minimumFractionDigits: 2})}</td> 
+            <td class="text-end">${computedORAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td> 
+            <td class="text-end">${Number(r[3]).toLocaleString()}</td> 
+            <td>${yrCover}</td> 
+            <td>${statusText}</td> 
         </tr>
     `;
 });
-    html += `
-            </tbody>
-            <tfoot>
-    <tr class="fw-bold">
-        <td colspan="3">TOTAL</td>
-        <td class="text-end">${total.toLocaleString()}</td>
-        <td colspan="2"></td>
-    </tr>
-</tfoot>
 
-        </table>
-    `;
+html += `
+        </tbody>
+        <tfoot>
+            <tr class="fw-bold">
+                <td colspan="6">TOTAL</td>
+                <td class="text-end">${total.toLocaleString()}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+`;
 
     document.getElementById('reportContent').innerHTML = html;
     document.getElementById('reportResult').style.display = 'block';
 }
-
 function printReport() {
     const content = document.getElementById('reportContent').innerHTML;
     const win = window.open('', '', 'height=700,width=900');
@@ -924,5 +963,4 @@ function prepareRemarksForPDF() {
 </script>
 </body>
 </html>
-
 
