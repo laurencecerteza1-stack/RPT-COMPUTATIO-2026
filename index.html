@@ -567,17 +567,68 @@ function createNew() {
 }
 
 async function renderListFromCloud() {
-    const list = document.getElementById('savedList'); list.innerHTML = "Loading...";
-    try {
-        const res = await fetch(CLOUD_URL); const data = await res.json();
-        list.innerHTML = "";
-        data.forEach((row) => {
-            list.innerHTML += `<tr><td>${new Date(row[0]).toLocaleString()}</td><td><b>${row[1]}</b></td><td>${row[2]}</td><td class="text-end pe-4 fw-bold text-success">${fcy(parseNum(row[3]))}</td><td class="text-center"><button class="btn btn-sm btn-primary py-0" onclick='loadForEdit(${row[5]}, ${JSON.stringify(row[4])})'>Edit</button></td></tr>`;
-        });
-        return data; 
-    } catch(e) { list.innerHTML = "Sync Error."; return []; }
-}
+    const list = document.getElementById('savedList'); 
+    list.innerHTML = "<tr><td colspan='5' class='text-center'>Loading...</td></tr>";
 
+    try {
+        const res = await fetch(CLOUD_URL); 
+        const data = await res.json();
+        list.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            list.innerHTML = "<tr><td colspan='5' class='text-center'>No data found.</td></tr>";
+            return [];
+        }
+
+        data.forEach((row, index) => {
+            // 1. I-prepare ang JSON data. 
+            // Ginagamitan ng .replace para hindi masira ang HTML kung may single quotes sa data.
+            const jsonStr = JSON.stringify(row[4]).replace(/'/g, "&apos;");
+
+            // 2. I-build ang table row
+            list.innerHTML += `
+                <tr>
+                    <td>${new Date(row[0]).toLocaleString()}</td>
+                    <td><b>${row[1]}</b></td>
+                    <td>${row[2]}</td>
+                    <td class="text-end pe-4 fw-bold text-success">
+                        ${typeof fcy === 'function' ? fcy(parseNum(row[3])) : row[3]}
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-primary py-0 edit-btn" 
+                                data-row="${row[5]}" 
+                                data-info='${jsonStr}'>
+                            Edit
+                        </button>
+                    </td>
+                </tr>`;
+        });
+
+        // 3. MAG-ADD NG CLICK LISTENER (Dito natin kukunin ang data)
+        const editButtons = list.querySelectorAll('.edit-btn');
+        editButtons.forEach(btn => {
+            btn.onclick = function() {
+                try {
+                    const rowNum = this.getAttribute('data-row');
+                    const rawInfo = this.getAttribute('data-info');
+                    const parsedInfo = JSON.parse(rawInfo);
+                    
+                    // Tawagin ang loadForEdit gamit ang malinis na object
+                    loadForEdit(rowNum, parsedInfo);
+                } catch (err) {
+                    console.error("Error parsing row data:", err);
+                    alert("Hindi ma-parse ang data ng row na ito.");
+                }
+            };
+        });
+
+        return data; 
+    } catch(e) { 
+        console.error("Fetch Error:", e);
+        list.innerHTML = "<tr><td colspan='5' class='text-center text-danger'>Sync Error.</td></tr>"; 
+        return []; 
+    }
+}
 function addRow(id) {
     const div = document.createElement('table');
     const wT = `<tr>
@@ -864,21 +915,48 @@ async function saveRecord() {
 
 
 
-function loadForEdit(rowNum, jsonData) {
-    document.getElementById('editRowNumber').value = rowNum;
-    document.getElementById('rowDisplay').innerText = rowNum;
-    document.getElementById('editStatus').style.display = "block";
-    const data = JSON.parse(jsonData);
-    const heads = document.querySelectorAll('.head-field');
-    data.heads.forEach((v, i) => { if(heads[i]) heads[i].value = v; });
-    document.getElementById('advPayment').value = data.adv;
-    document.getElementById('remarks').value = data.remarks;
-    toggleBuilding(data.buildVisible);
-    restoreTable('bodyWithOrLand', data.wLand); restoreTable('bodyWithoutOrLand', data.woLand);
-    restoreTable('bodyWithOrBuild', data.wBuild); restoreTable('bodyWithoutOrBuild', data.woBuild);
-    document.getElementById('home-screen').style.display = 'none';
-    document.querySelector('.form-container').style.display = 'block';
-    updateGrandTotal();
+function loadForEdit(rowNum, jsonData, isBase64 = false) {
+    try {
+        let rawData = jsonData;
+        
+        // I-decode kung galing sa Cloud (Base64)
+        if (isBase64) {
+            rawData = decodeURIComponent(escape(atob(jsonData)));
+        }
+
+        const data = (typeof rawData === 'string') ? JSON.parse(rawData) : rawData;
+
+        // UI Updates
+        document.getElementById('editRowNumber').value = rowNum;
+        document.getElementById('rowDisplay').innerText = rowNum;
+        document.getElementById('editStatus').style.display = "block";
+
+        // Safety check para sa data.heads
+        const heads = document.querySelectorAll('.head-field');
+        if (data.heads && Array.isArray(data.heads)) {
+            data.heads.forEach((v, i) => { if(heads[i]) heads[i].value = v; });
+        }
+
+        document.getElementById('advPayment').value = data.adv || 0;
+        document.getElementById('remarks').value = data.remarks || "";
+        
+        toggleBuilding(data.buildVisible);
+        
+        // I-restore ang tables (with empty array fallback)
+        restoreTable('bodyWithOrLand', data.wLand || []); 
+        restoreTable('bodyWithoutOrLand', data.woLand || []);
+        restoreTable('bodyWithOrBuild', data.wBuild || []); 
+        restoreTable('bodyWithoutOrBuild', data.woBuild || []);
+
+        document.getElementById('home-screen').style.display = 'none';
+        document.querySelector('.form-container').style.display = 'block';
+        
+        updateGrandTotal();
+
+    } catch (error) {
+        console.error("Error loading data:", error);
+        alert("Hindi ma-load ang data. May error sa format.");
+    }
 }
 
 function toggleBuilding(force) { 
@@ -963,6 +1041,5 @@ function prepareRemarksForPDF() {
 </script>
 </body>
 </html>
-
 
 
