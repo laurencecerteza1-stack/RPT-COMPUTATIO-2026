@@ -544,12 +544,30 @@ function logout() { location.reload(); }
 function showHome() { document.getElementById('home-screen').style.display = 'flex'; document.querySelector('.form-container').style.display = 'none'; renderListFromCloud(); }
 
 function filterTable() {
-    let input = document.getElementById("searchBar").value.toUpperCase();
-    let rows = document.getElementById("savedList").getElementsByTagName("tr");
-    for (let i = 0; i < rows.length; i++) {
-        let lotCell = rows[i].getElementsByTagName("td")[1];
-        if (lotCell) rows[i].style.display = (lotCell.textContent || lotCell.innerText).toUpperCase().indexOf(input) > -1 ? "" : "none";
+    const input = document.getElementById("searchBar").value.toUpperCase();
+    const style = document.getElementById("filterStyle") || Object.assign(document.createElement("style"), {id: "filterStyle"});
+    
+    if (!style.parentNode) document.head.appendChild(style);
+
+    if (!input) {
+        style.innerHTML = ""; // Pakita lahat kung walang search
+        return;
     }
+
+    // Ang logic: Itago lahat ng rows, tapos ipakita lang yung may match sa Lot (Column 2)
+    // Ang 'tr:not' ay napakabilis na CSS selector.
+    style.innerHTML = `
+        #savedList tr { display: none; }
+        #savedList tr[data-search*="${input}"] { display: table-row; }
+    `;
+}
+// Ito ang "timer" para hindi mabigla ang computer
+let debounceTimer;
+function debouncedFilter() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        filterTable();
+    }, 300); // Maghihintay ng 0.3 seconds matapos mag-type ang user
 }
 
 function createNew() { 
@@ -573,54 +591,49 @@ async function renderListFromCloud() {
     try {
         const res = await fetch(CLOUD_URL); 
         const data = await res.json();
-        list.innerHTML = "";
+        
+        // Gagamit tayo ng temporary container para isang beses lang i-update ang screen
+        const fragment = document.createDocumentFragment();
+        list.innerHTML = ""; 
 
         if (!data || data.length === 0) {
             list.innerHTML = "<tr><td colspan='5' class='text-center'>No data found.</td></tr>";
             return [];
         }
 
-        data.forEach((row, index) => {
-            // 1. I-prepare ang JSON data. 
-            // Ginagamitan ng .replace para hindi masira ang HTML kung may single quotes sa data.
+        data.forEach((row) => {
+            const tr = document.createElement('tr');
+            
+            // DITO ANG SIKRETO NG BILIS: 
+            // I-store ang search keywords sa attribute para CSS na ang mag-filter later.
+            const searchKey = `${row[1]} ${row[2]}`.toUpperCase(); 
+            tr.setAttribute('data-search', searchKey);
+
             const jsonStr = JSON.stringify(row[4]).replace(/'/g, "&apos;");
-
-            // 2. I-build ang table row
-            list.innerHTML += `
-                <tr>
-                    <td>${new Date(row[0]).toLocaleString()}</td>
-                    <td><b>${row[1]}</b></td>
-                    <td>${row[2]}</td>
-                    <td class="text-end pe-4 fw-bold text-success">
-                        ${typeof fcy === 'function' ? fcy(parseNum(row[3])) : row[3]}
-                    </td>
-                    <td class="text-center">
-                        <button class="btn btn-sm btn-primary py-0 edit-btn" 
-                                data-row="${row[5]}" 
-                                data-info='${jsonStr}'>
-                            Edit
-                        </button>
-                    </td>
-                </tr>`;
+            
+            tr.innerHTML = `
+                <td>${new Date(row[0]).toLocaleString()}</td>
+                <td><b>${row[1]}</b></td>
+                <td>${row[2]}</td>
+                <td class="text-end pe-4 fw-bold text-success">
+                    ${typeof fcy === 'function' ? fcy(parseNum(row[3])) : row[3]}
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-primary py-0 edit-btn" 
+                            data-row="${row[5]}" 
+                            data-info='${jsonStr}'>
+                        Edit
+                    </button>
+                </td>
+            `;
+            fragment.appendChild(tr);
         });
 
-        // 3. MAG-ADD NG CLICK LISTENER (Dito natin kukunin ang data)
-        const editButtons = list.querySelectorAll('.edit-btn');
-        editButtons.forEach(btn => {
-            btn.onclick = function() {
-                try {
-                    const rowNum = this.getAttribute('data-row');
-                    const rawInfo = this.getAttribute('data-info');
-                    const parsedInfo = JSON.parse(rawInfo);
-                    
-                    // Tawagin ang loadForEdit gamit ang malinis na object
-                    loadForEdit(rowNum, parsedInfo);
-                } catch (err) {
-                    console.error("Error parsing row data:", err);
-                    alert("Hindi ma-parse ang data ng row na ito.");
-                }
-            };
-        });
+        // Isang bagsakan na pag-load sa table (Instant rendering!)
+        list.appendChild(fragment);
+
+        // I-setup ang mga edit buttons
+        attachEditListeners();
 
         return data; 
     } catch(e) { 
@@ -628,6 +641,17 @@ async function renderListFromCloud() {
         list.innerHTML = "<tr><td colspan='5' class='text-center text-danger'>Sync Error.</td></tr>"; 
         return []; 
     }
+}
+
+// Hiwalay na function para sa click listeners para malinis
+function attachEditListeners() {
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.onclick = function() {
+            const rowNum = this.getAttribute('data-row');
+            const info = JSON.parse(this.getAttribute('data-info'));
+            loadForEdit(rowNum, info);
+        };
+    });
 }
 function addRow(id) {
     const div = document.createElement('table');
