@@ -865,80 +865,102 @@ function updateGrandTotal() {
 }
 
 async function saveRecord() {
-    const lot = document.getElementById('lotDetails').value.trim(); // 
-    const existingRow = document.getElementById('editRowNumber').value; // 
+    const lot = document.getElementById('lotDetails').value.trim();
+    const existingRow = document.getElementById('editRowNumber').value;
+    const saveBtn = document.getElementById('saveBtn');
     
-    if(!lot) return alert("Lot Details required!"); // 
-    
-    const saveBtn = document.getElementById('saveBtn'); // 
+    if(!lot) return alert("Lot Details required!");
+
     saveBtn.disabled = true;
-    saveBtn.innerText = "CHECKING DUPLICATES...";
+    saveBtn.innerText = "SAVING...";
 
     try {
-        // 1. Kumuha muna ng latest data mula sa Cloud para i-check kung may duplicate 
-        const res = await fetch(CLOUD_URL);
-        const cloudData = await res.json();
-
-        // 2. I-check kung may kaparehong Lot Details sa existing records 
-        // Hahayaan lang ang pag-save kung "Edit Mode" at ang kapareho ay ang mismong row na ine-edit 
-        const isDuplicate = cloudData.some(row => 
-            row[1].toString().toUpperCase() === lot.toUpperCase() && 
-            row[5].toString() !== existingRow.toString()
-        );
-
-        if (isDuplicate) {
-            alert("Error: Ang Lot Details na '" + lot + "' ay may record na sa system. Hindi ito pwedeng i-save.");
-            saveBtn.disabled = false;
-            saveBtn.innerText = "SAVE / UPDATE CLOUD";
-            return; // Itigil ang buong function dito 
-        }
-
-        // 3. Kung walang duplicate, ituloy ang normal na pag-save 
-        saveBtn.innerText = "SAVING...";
+        // 1. DATA PREPARATION
         const record = {
-            existingRow: existingRow || null, // 
+            existingRow: existingRow || null,
             lot: lot, 
-            prep: document.getElementById('preparedBy').value, // 
-            total: document.getElementById('grandTotal').value, // 
+            prep: document.getElementById('preparedBy').value,
+            total: document.getElementById('grandTotal').value,
             fullData: { 
-                heads: Array.from(document.querySelectorAll('.head-field')).map(i => i.value), // 
-                adv: document.getElementById('advPayment').value, // 
-                remarks: document.getElementById('remarks').value, // 
-                buildVisible: document.getElementById('buildingSection').style.display === 'block', // 
-                wLand: scrapeTable('bodyWithOrLand'), // 
-                woLand: scrapeTable('bodyWithoutOrLand'), // 
-                wBuild: scrapeTable('bodyWithOrBuild'), // 
-                woBuild: scrapeTable('bodyWithoutOrBuild') // 
+                heads: Array.from(document.querySelectorAll('.head-field')).map(i => i.value),
+                adv: document.getElementById('advPayment').value,
+                remarks: document.getElementById('remarks').value,
+                buildVisible: document.getElementById('buildingSection').style.display === 'block',
+                wLand: scrapeTable('bodyWithOrLand'),
+                woLand: scrapeTable('bodyWithoutOrLand'),
+                wBuild: scrapeTable('bodyWithOrBuild'),
+                woBuild: scrapeTable('bodyWithoutOrBuild')
             }
         };
 
-        // I-save ang record sa Google Sheets 
-        await fetch(CLOUD_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(record) }); // 
-        
-        // Refresh ang table list 
-        const updatedData = await renderListFromCloud(); // 
-        
-        if(!existingRow) {
-            // I-set sa Edit Mode ang bagong save na record 
-            const myLatest = updatedData.filter(r => r[2] === CURRENT_USER).sort((a,b) => b[5] - a[5])[0]; // 
-            if(myLatest) {
-                document.getElementById('editRowNumber').value = myLatest[5]; // 
-                document.getElementById('rowDisplay').innerText = myLatest[5]; // 
-                document.getElementById('editStatus').style.display = "block"; // 
+        // 2. SEND TO CLOUD
+        await fetch(CLOUD_URL, { 
+            method: "POST", 
+            mode: "no-cors", 
+            body: JSON.stringify(record) 
+        });
+
+        // 3. AUTO-CONVERT TO EDIT MODE (Kung dati itong 'New')
+        if (!existingRow) {
+            // Kunin natin ang huling row number sa table at dagdagan ng isa (Prediction)
+            const rows = document.querySelectorAll('#savedList tr');
+            let nextRow = 2; // Default start kung empty
+            
+            if (rows.length > 0) {
+                // Kunin ang pinakamataas na row number na naka-display
+                const currentIds = Array.from(rows).map(r => parseInt(r.querySelector('.edit-btn')?.getAttribute('data-row') || 0));
+                nextRow = Math.max(...currentIds) + 1;
             }
+
+            // I-apply agad ang Edit Mode sa UI
+            document.getElementById('editRowNumber').value = nextRow;
+            document.getElementById('rowDisplay').innerText = nextRow;
+            document.getElementById('editStatus').style.display = "block";
+            
+            console.log("Converted to Edit Mode: Row " + nextRow);
         }
-        
-        alert("Success! Record saved."); // 
+
+        // 4. VISUAL NOTIFICATION (Toast)
+        showInstantStatus("SAVED TO CLOUD");
+
+        // 5. SILENT BACKGROUND REFRESH
+        // I-update ang table sa background para kung sakaling mali ang "prediction", maitama ng refresh
+        renderListFromCloud();
+
     } catch(e) { 
-        alert("Error saving data or checking duplicates."); // 
+        alert("System Error: " + e.message); 
     } finally {
-        saveBtn.disabled = false; // 
-        saveBtn.innerText = "SAVE / UPDATE CLOUD"; // 
+        saveBtn.disabled = false;
+        saveBtn.innerText = "SAVE / UPDATE CLOUD";
     }
 }
 
+// Para lumitaw ang notification sa gilid o itaas ng Save button
+function showInstantStatus(text) {
+    const statusLabel = document.getElementById('rowDisplay');
+    const originalColor = statusLabel.style.color;
+    const originalText = statusLabel.innerText;
 
+    statusLabel.innerText = originalText + " - " + text;
+    statusLabel.style.color = "#28a745"; // Green
+    statusLabel.style.fontWeight = "bold";
 
+    setTimeout(() => {
+        statusLabel.innerText = document.getElementById('editRowNumber').value;
+        statusLabel.style.color = originalColor;
+    }, 3000);
+}
+// Utility para sa mabilis na feedback
+function showToast(msg) {
+    const status = document.getElementById('editStatus');
+    const originalText = status.innerText;
+    status.innerText = "✅ " + msg;
+    status.style.color = "green";
+    setTimeout(() => { 
+        status.innerText = originalText; 
+        status.style.color = ""; 
+    }, 3000);
+}
 function loadForEdit(rowNum, jsonData, isBase64 = false) {
     try {
         let rawData = jsonData;
