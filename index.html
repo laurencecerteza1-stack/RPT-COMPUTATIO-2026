@@ -871,11 +871,34 @@ async function saveRecord() {
     
     if(!lot) return alert("Lot Details required!");
 
+    // 1. LOCK BUTTON & INITIAL STATUS
     saveBtn.disabled = true;
-    saveBtn.innerText = "SAVING...";
+    saveBtn.innerText = "🔍 CHECKING DUPLICATES...";
 
     try {
-        // 1. DATA PREPARATION
+        // STEP A: Kunin ang pinaka-latest na data mula sa Cloud para siguradong accurate ang check
+        const resData = await fetch(CLOUD_URL);
+        const currentCloudData = await resData.json();
+
+        // STEP B: I-check kung may kaparehong Lot Details
+        const isDuplicate = currentCloudData.some(row =>
+            row[1].toString().toUpperCase() === lot.toUpperCase() &&
+            row[5].toString() !== existingRow.toString()
+        );
+
+        // STEP C: ANG HARANG. Kapag duplicate, hihinto tayo dito.
+        if (isDuplicate) {
+            alert("🚫 Error: Ang Lot Details na '" + lot + "' ay may record na. HINDI ito pwedeng i-save.");
+            
+            // I-reset ang button para mapindot ulit pagkatapos baguhin ang input
+            saveBtn.disabled = false;
+            saveBtn.innerText = "SAVE / UPDATE CLOUD";
+            
+            return; // <<--- NAPAKAHALAGA: Ito ang magpapatigil sa pag-save
+        }
+
+        // 2. DATA PREPARATION (Dito lang makakarating ang code kung HINDI duplicate)
+        saveBtn.innerText = "🚀 SAVING...";
         const record = {
             existingRow: existingRow || null,
             lot: lot, 
@@ -893,39 +916,28 @@ async function saveRecord() {
             }
         };
 
-        // 2. SEND TO CLOUD
+        // 3. ACTUAL SAVING TO GOOGLE SHEETS
         await fetch(CLOUD_URL, { 
             method: "POST", 
             mode: "no-cors", 
             body: JSON.stringify(record) 
         });
 
-        // 3. AUTO-CONVERT TO EDIT MODE (Kung dati itong 'New')
+        // 4. AUTO-CONVERT TO EDIT MODE (Base sa logic mo)
         if (!existingRow) {
-            // Kunin natin ang huling row number sa table at dagdagan ng isa (Prediction)
             const rows = document.querySelectorAll('#savedList tr');
-            let nextRow = 2; // Default start kung empty
-            
+            let nextRow = 2; 
             if (rows.length > 0) {
-                // Kunin ang pinakamataas na row number na naka-display
                 const currentIds = Array.from(rows).map(r => parseInt(r.querySelector('.edit-btn')?.getAttribute('data-row') || 0));
                 nextRow = Math.max(...currentIds) + 1;
             }
-
-            // I-apply agad ang Edit Mode sa UI
             document.getElementById('editRowNumber').value = nextRow;
             document.getElementById('rowDisplay').innerText = nextRow;
             document.getElementById('editStatus').style.display = "block";
-            
-            console.log("Converted to Edit Mode: Row " + nextRow);
         }
 
-        // 4. VISUAL NOTIFICATION (Toast)
-        showInstantStatus("SAVED TO CLOUD");
-
-        // 5. SILENT BACKGROUND REFRESH
-        // I-update ang table sa background para kung sakaling mali ang "prediction", maitama ng refresh
-        renderListFromCloud();
+        showInstantStatus("✅ SAVED TO CLOUD");
+        await renderListFromCloud(); // Refresh list
 
     } catch(e) { 
         alert("System Error: " + e.message); 
@@ -933,9 +945,7 @@ async function saveRecord() {
         saveBtn.disabled = false;
         saveBtn.innerText = "SAVE / UPDATE CLOUD";
     }
-}
-
-// Para lumitaw ang notification sa gilid o itaas ng Save button
+}  
 function showInstantStatus(text) {
     const statusLabel = document.getElementById('rowDisplay');
     const originalColor = statusLabel.style.color;
