@@ -88,6 +88,48 @@
     white-space: pre-wrap;
     word-wrap: break-word;
 }
+/* Container: Tipid sa space, magkakatabi lang sila */
+.comp-date-container {
+    margin-bottom: 10px;
+    display: inline-flex; /* Inline para hindi sakop ang buong line */
+    align-items: center;
+    gap: 8px;
+    font-family: sans-serif;
+}
+
+/* Label: Mas maliit at subtle */
+.comp-date-container label {
+    font-weight: 600;
+    color: #555;
+    font-size: 12px; /* Small font */
+    white-space: nowrap;
+}
+
+/* Dropdown: Manipis at compact */
+#date {
+    padding: 2px 8px; /* Sobrang nipis ng padding */
+    font-size: 13px;  /* Tamang laki lang para mabasa */
+    height: 28px;     /* Fixed height para hindi mataba */
+    font-weight: bold;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    min-width: 80px;  /* Sapat lang para sa 4 digits (2026) */
+}
+
+/* Hover & Focus: Simple change lang */
+#date:hover {
+    border-color: #3498db;
+    background-color: #fff;
+}
+
+#date:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 3px rgba(52, 152, 219, 0.3);
+}
 /* Siguraduhin na ang class na ito ay walang fixed height */
 .remarks-pdf-fixed {
     white-space: pre-wrap !important; /* Pinapanatili ang line breaks */
@@ -227,6 +269,7 @@
                 <label class="form-label mt-1">Lot Details:</label><input type="text" id="lotDetails" class="form-control form-control-sm head-field" oninput="triggerGlobalRecalc()">
                 <label class="form-label mt-1">Prepared By:</label><input type="text" id="preparedBy" class="form-control form-control-sm head-field" readonly>
                 <label class="form-label mt-1">Full Payment:</label><input type="text" class="form-control form-control-sm head-field">
+                <div class="comp-date-container"><label for="date">For Year:</label><select id="date"></select></div>  
             </div>
             <div class="col-2">
                 <label class="form-label">Yr. Cover:</label><input type="text" class="form-control form-control-sm head-field">
@@ -245,6 +288,7 @@
                 <textarea id="remarks" class="form-control form-control-sm remarks-area" style="overflow:hidden;" oninput="this.style.height='auto'; this.style.height=this.scrollHeight+'px';">SUBJECT FOR ADJUSTMENT -</textarea>
             </div>
         </div>
+        
 
         <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light border border-dark">
             <h6 class="mb-0 fw-bold">LAND COMPUTATION</h6>
@@ -322,7 +366,7 @@
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxjWCwdUid2jTgW2p43gLTd07i-3T-cTYsokJy8vhW3syxDCSfwAFESw6BmveWZ1fG7iA/exec";
 let CURRENT_USER = "";
 
-const TAX_DATABASE = {"AAM": "BRANCH", "ACD": "BRANCH", "ACE": "2%", "ACL001": "5%", "ACL002": "3.50%", "ACM": "3%", "ACN": "2%", "ACR": "3%", "AED": "BRANCH", "AGL": "2.50%", "AMC": "3%", "AME": "2%", "AMS": "2%", "AMV": "3%", "AVA": "2.50%", "AVS": "2%", "AVT": "2%", "BBE": "3%", "BHS": "5%", "BME": "2.50%", "BPR": "2%", "BRB": "2%", "BRM": "BRANCH", "CCL": "2%", "CDB": "5%", "CDE": "3%", "CDS": "BRANCH", "CGL": "2%", "CHR": "2%", "CLB": "2%", "CLP": "NO TD", "CMD": "BRANCH", "CMS": "2%", "CPB": "2%", "CRC": "2%", "CRE": "3%", "CSG": "2%", "CTL": "2%", "CUE": "2.50%", "CVA": "2.50%", "CVB": "2.10%", "CVC": "2%", "CVF": "4%", "CVL": "2%", "CVS": "2.10%", "CVY": "2%", "DAR": "3%", "DCS": "2%", "DJR": "2%", "EAS": "2%", "EBA": "2%", "EGC": "2%", "EGE": "2.50%", "EGV": "2%", "EPV": "2%", "ERE": "2%", "ERV": "2%", "GBB": "NO TD", "GHP": "2%", "GLN": "2%", "GMB": "2%", "GMD": "2%", "GME": "2.50%", "GMI": "BRANCH", "GMN": "2%", "GMT": "2%", "GPH": "2%", "GPP": "3%", "GPS": "2%", "GPT": "2%", "GRE": "2%", "GRT": "2%", "GRV": "3%", "GTE": "2%", "GVB": "2%", "GVW": "3%", "GWB": "2.10%", "GWE": "2.50%", "GWN": "2%", "GWS": "2.50%", "HRA": "2%", "HSP": "4%", "HVI": "BRANCH", "KVH": "2.50%", "LAN": "BRANCH", "LAP": "2%", "LBT": "DON'T COU", "LCE": "BRANCH", "LHC": "2%", "LHL": "2.60%", "LMR": "2.10%", "LMV": "BRANCH", "LPR": "3%", "LRC": "2%", "LRE": "2%", "LRS": "NO TD", "LRT": "BRANCH", "LSC": "NO TD", "LVE": "2%", "LWC": "2%", "LWE": "2%", "MBD": "BRANCH", "MGS": "2%", "MIE": "5%", "MLL": "NO TD", "MMR": "2%", "MNV": "2%", "MPE": "2%", "MPG": "2%", "MPN": "2.10%", "MPS": "2%", "MRD": "BRANCH", "MRE": "2.50%", "MRP": "4%", "MRT": "2%", "MSV": "2%", "MVB": "2.10%", "MVD": "BRANCH", "MVE": "2%", "MVM": "NO TD", "MVT": "2%", "MWE": "2%", "NCB": "2%", "NHC": "BRANCH", "NPB": "NO TD", "NPC": "2.50%", "NPE": "3%", "NVI": "BRANCH", "NVM": "NO TD", "NVP": "NO TD", "NVT": "2%", "NWE": "3%", "ORD": "BRANCH", "ORE": "2%", "ORO": "5%", "OTP": "2.50%", "OVG": "2.50%", "PAE": "2%", "PAL": "2%", "PCE": "2.50%", "PDP": "2%", "PDS": "2.50%", "PGS": "2.50%", "PHB": "2.10%", "PHS": "2.50%", "PRL": "2%", "PVB": "2.50%", "PVD": "BRANCH", "PVE": "2.50%", "PVH": "2.50%", "PVR": "2%", "PVS": "2.50%", "PWE": "2.50%", "PWG": "3%", "RDC": "2%", "RIZ": "2%", "RME": "2%", "RMS": "2%", "RNW": "2.10%", "RVC": "2%", "RWT": "2%", "SBP": "3%", "SBR": "3%", "SCB": "2%", "SCD": "2%", "SCL": "2%", "SCS": "NO TD", "SFE": "2%", "SGB": "3%", "SGD": "BRANCH", "SGE": "", "SGI": "BRANCH", "SGK": "2.50%", "SGP": "NO TD", "SHE": "2.50%", "SLE": "2.50%", "SLR": "2%", "SMD": "BRANCH", "SOD": "BRANCH", "SPE": "2%", "SPL": "2%", "SSE": "2%", "SSL": "2%", "STG": "2.50%", "STR": "2%", "STT": "2%", "SVD": "BRANCH", "SVR": "3%", "TES": "2%", "TGE": "3%", "TVT": "2%", "VCH": "2.50%", "VCT": "2%", "VPE": "2.50%", "VPP": "2.50%", "VRC": "3.50%", "VTM": "BRANCH", "VVA": "2%", "VVA/2": "2%", "VVD": "BRANCH", "VVE": "2.50%", "VVL": "5%", "VVM": "5%", "VVN": "2.50%", "VVQ": "2.50%", "VVR": "2%", "VVS": "2%", "VVW": "2.50%", "VWR": "2%", "WGV": "3%", "WRI": "BRANCH", "WRM": "5%", "YSR": "2%", "W": "2%"};
+const TAX_DATABASE = {"AAM": "BRANCH", "ACD": "BRANCH", "ACE": "2%", "ACL001": "5%", "ACL002": "3.50%", "ACM": "3%", "ACN": "2%", "ACR": "3%", "AED": "BRANCH", "AGL": "2.50%", "AMC": "3%", "AME": "2%", "AMS": "2%", "AMV": "3%", "AVA": "2.50%", "AVS": "2%", "AVT": "2%", "BBE": "3%", "BHS": "5%", "BME": "2.50%", "BPR": "2%", "BRB": "2%", "BRM": "BRANCH", "CCL": "2%", "CDB": "5%", "CDE": "3%", "CDS": "BRANCH", "CGL": "2%", "CHR": "2%", "CLB": "2%", "CLP": "NO TD", "CMD": "BRANCH", "CMS": "2%", "CPB": "2%", "CRC": "2%", "CRE": "3%", "CSG": "2%", "CTL": "2%", "CUE": "2.50%", "CVA": "2.50%", "CVB": "2.10%", "CVC": "2%", "CVF": "4%", "CVL": "2%", "CVS": "2.10%", "CVY": "2%", "DAR": "3%", "DCS": "2%", "DJR": "2%", "EAS": "2%", "EBA": "2%", "EGC": "2%", "EGE": "2.50%", "EGV": "2%", "EPV": "2%", "ERE": "2%", "ERV": "2%", "GBB": "NO TD", "GHP": "2%", "GLN": "2%", "GMB": "2%", "GMD": "2%", "GME": "2.50%", "GMI": "BRANCH", "GMN": "2%", "GMT": "2%", "GPH": "2%", "GPP": "3%", "GPS": "2%", "GPT": "2%", "GRE": "2%", "GRT": "2%", "GRV": "3%", "GTE": "2%", "GVB": "2%", "GVW": "3%", "GWB": "2.10%", "GWE": "2.50%", "GWN": "2%", "GWS": "2.50%", "HRA": "2%", "HSP": "4%", "HVI": "BRANCH", "KVH": "2.50%", "LAN": "BRANCH", "LAP": "2%", "LBT": "DON'T COU", "LCE": "BRANCH", "LHC": "2%", "LHL": "2.60%", "LMR": "2.10%", "LMV": "BRANCH", "LPR": "3%", "LRC": "2%", "LRE": "2%", "LRS": "NO TD", "LRT": "BRANCH", "LSC": "NO TD", "LVE": "2%", "LWC": "2%", "LWE": "2%", "MBD": "BRANCH", "MGS": "2%", "MIE": "5%", "MLL": "2%", "MMR": "2%", "MNV": "2%", "MPE": "2%", "MPG": "2%", "MPN": "2.10%", "MPS": "2%", "MRD": "BRANCH", "MRE": "2.50%", "MRP": "4%", "MRT": "2%", "MSV": "2%", "MVB": "2.10%", "MVD": "BRANCH", "MVE": "2%", "MVM": "NO TD", "MVT": "2%", "MWE": "2%", "NCB": "2%", "NHC": "BRANCH", "NPB": "NO TD", "NPC": "2.50%", "NPE": "3%", "NVI": "BRANCH", "NVM": "NO TD", "NVP": "NO TD", "NVT": "2%", "NWE": "3%", "ORD": "BRANCH", "ORE": "2%", "ORO": "5%", "OTP": "2.50%", "OVG": "2.50%", "PAE": "2%", "PAL": "2%", "PCE": "2.50%", "PDP": "2%", "PDS": "2.50%", "PGS": "2.50%", "PHB": "2.10%", "PHS": "2.50%", "PRL": "2%", "PVB": "2.50%", "PVD": "BRANCH", "PVE": "2.50%", "PVH": "2.50%", "PVR": "2%", "PVS": "2.50%", "PWE": "2.50%", "PWG": "3%", "RDC": "2%", "RIZ": "2%", "RME": "2%", "RMS": "2%", "RNW": "2.10%", "RVC": "2%", "RWT": "2%", "SBP": "3%", "SBR": "3%", "SCB": "2%", "SCD": "2%", "SCL": "2%", "SCS": "NO TD", "SFE": "2%", "SGB": "3%", "SGD": "BRANCH", "SGE": "", "SGI": "BRANCH", "SGK": "2.50%", "SGP": "NO TD", "SHE": "2.50%", "SLE": "2.50%", "SLR": "2%", "SMD": "BRANCH", "SOD": "BRANCH", "SPE": "2%", "SPL": "2%", "SSE": "2%", "SSL": "2%", "STG": "2.50%", "STR": "2%", "STT": "2%", "SVD": "BRANCH", "SVR": "3%", "TES": "2%", "TGE": "3%", "TVT": "2%", "VCH": "2.50%", "VCT": "2%", "VPE": "2.50%", "VPP": "2.50%", "VRC": "3.50%", "VTM": "BRANCH", "VVA": "2%", "VVA/2": "2%", "VVD": "BRANCH", "VVE": "2.50%", "VVL": "5%", "VVM": "5%", "VVN": "2.50%", "VVQ": "2.50%", "VVR": "2%", "VVS": "2%", "VVW": "2.50%", "VWR": "2%", "WGV": "3%", "WRI": "BRANCH", "WRM": "5%", "YSR": "2%", "W": "2%"};
 
 function getTaxInfo(lotText) {
     const lot = lotText.trim().toUpperCase();
@@ -707,120 +751,127 @@ function clearRow(btn) {
     if(orInput) orInput.dispatchEvent(new Event('input'));
     updateGrandTotal();
 }
-
-function calcWithOR(el) {
+ function calcWithOR(el) {
     const tr = el.closest('tr'); 
-    const chargeStr = tr.querySelector('.w-charge').value.trim();
+    const yrsInput = tr.querySelector('.w-yrs');
     const dateStr = tr.querySelector('.or-date').value.trim();
+    const chargeStr = tr.querySelector('.w-charge').value.trim();
     const rawAmt = parseNum(tr.querySelector('.w-amt').value);
-    const yrsInput = tr.querySelector('.w-yrs'); // Target ang No. Yrs field
 
-    if (!dateStr || !rawAmt || isNaN(rawAmt)) {
-        yrsInput.value = "";
-        tr.querySelector('.w-range').value = "";
-        tr.querySelector('.w-annum').value = "";
-        tr.querySelector('.w-p-amt').value = "";
-        tr.querySelector('.w-total').value = "0.00";
-        updateGrandTotal();
-        return;
-    }
+    // KUNIN ANG YEAR SA DROPDOWN
+    const dropdown = document.getElementById('date');
+    if (!dropdown || !dateStr || isNaN(rawAmt)) return;
+    
+    const selectedYear = parseInt(dropdown.value.split('-').pop()); 
+    const previousYear = selectedYear - 1;
 
-    // ===== PARSE DATE =====
-    const safeDateStr = dateStr.replace(/-/g, '/');
-    const [month, day, year] = safeDateStr.split('/').map(Number);
-    if (!month || !day || !year) return;
+    // PARSE ROW DATE
+    const rowParts = dateStr.replace(/-/g, '/').split('/').map(Number);
+    const [month, day, year] = rowParts;
     const d = new Date(year, month - 1, day);
-    if (isNaN(d)) return;
 
-    // ===== QUARTER FACTOR =====
-    let quarterFactor = 1.0;
+    // AMOUNT & QUARTER FACTOR
+    let qFactor = 1.0;
     const qMatch = chargeStr.match(/\((\d)-?(\d)?\)/);
     if (qMatch) {
-        const startQ = parseInt(qMatch[1]);
-        const endQ = qMatch[2] ? parseInt(qMatch[2]) : startQ;
-        quarterFactor = ((endQ - startQ) + 1) / 4;
+        const sQ = parseInt(qMatch[1]);
+        const eQ = qMatch[2] ? parseInt(qMatch[2]) : sQ;
+        qFactor = ((eQ - sQ) + 1) / 4;
     }
-    const amount = rawAmt * quarterFactor;
+    const amount = rawAmt * qFactor;
 
-    // ===== NO PENALTY LOGIC (Effective Dec 21, 2025 onwards) =====
-    const noPenaltyDate = new Date(2025, 11, 21);
+    // NO PENALTY (Dec 21 onwards of the previous year)
+    const noPenaltyDate = new Date(previousYear, 11, 21);
     if (d >= noPenaltyDate) {
-        // Mag-auto 0.00 lang kung hindi naka-manual edit mode
-        if (yrsInput.readOnly) yrsInput.value = "0.00"; 
-        
-        tr.querySelector('.w-range').value = "NO PENALTY";
-        tr.querySelector('.w-annum').value = fcy(amount * 0.36);
-        tr.querySelector('.w-p-amt').value = fcy((amount * 0.36) * parseFloat(yrsInput.value || 0));
-        tr.querySelector('.w-total').value = fcy(amount + (amount * 0.36 * parseFloat(yrsInput.value || 0)));
-        updateGrandTotal();
+        if (yrsInput.readOnly) yrsInput.value = "0.00";
+        updateFields(tr, "NO PENALTY", amount, parseFloat(yrsInput.value || 0));
         return;
     }
 
-    // ===== DETERMINE QUARTER & FRACTION (Cut-off: 21st) =====
-    let qNum = 1;
-    let qFrac = 0.00;
+    // QUARTER & FRACTION
+    let qNum = 1, qFrac = 0.00;
     if (month > 9 || (month === 9 && day >= 21)) { qNum = 4; qFrac = 0.75; }
     else if (month > 6 || (month === 6 && day >= 21)) { qNum = 3; qFrac = 0.50; }
     else if (month > 3 || (month === 3 && day >= 21)) { qNum = 2; qFrac = 0.25; }
-    else { qNum = 1; qFrac = 0.00; }
 
-    // ===== FINAL YEARS & DESCRIPTION LOGIC =====
+    // THE 5-YEAR SLIDING RULE
+    let isDec21Cutoff = (month === 12 && day >= 21);
+    let effectiveYear = isDec21Cutoff ? year + 1 : year;
+    let yearDiff = selectedYear - effectiveYear;
+
     let autoYears = 0;
     let rangeLabel = "";
 
-    if (d <= new Date(2020, 11, 20)) {
+    if (yearDiff > 5) {
+        // Prescriptive Period (1.00 Year flat)
         autoYears = 1.00;
-        rangeLabel = `${year}-2025`;
+        rangeLabel = `${year}-${previousYear}`;
     } else {
-        let isDec21Cutoff = (month === 12 && day >= 21);
-        let effectiveYear = isDec21Cutoff ? year + 1 : year;
-        let base = 0;
-        if (effectiveYear === 2021) base = 5;
-        else if (effectiveYear === 2022) base = 4;
-        else if (effectiveYear === 2023) base = 3;
-        else if (effectiveYear === 2024) base = 2;
-        else if (effectiveYear === 2025) base = 1;
-
-        if (isDec21Cutoff) autoYears = base; 
-        else autoYears = Math.max(0, base - qFrac);
-
-        rangeLabel = `${year} Q${qNum}-2025`;
+        // Normal Sliding Computation
+        autoYears = isDec21Cutoff ? yearDiff : Math.max(0, yearDiff - qFrac);
+        rangeLabel = (isDec21Cutoff) ? `${effectiveYear}-${previousYear}` : `${year} Q${qNum}-${previousYear}`;
     }
 
-    // --- DITO ANG MAGIC PARA SA EDITABLE NO. YRS ---
-    // Kung ang yrsInput ay 'readonly' (ibig sabihin hindi mo tinitype), gamitin ang autoYears.
-    // Kung 'hindi readonly' (tinitype mo), gamitin kung anong nandoon sa loob.
+    // EDITABLE SUPPORT
     if (yrsInput.readOnly) {
         yrsInput.value = autoYears.toFixed(2);
     }
     
-    let finalYears = parseFloat(yrsInput.value) || 0;
+    updateFields(tr, rangeLabel, amount, parseFloat(yrsInput.value) || 0);
+}
 
-    // ===== COMPUTATION =====
+function updateFields(tr, range, amount, years) {
     const annum = amount * 0.36;
-    const penalty = annum * finalYears;
-
-    // ===== ASSIGN VALUES =====
-    tr.querySelector('.w-range').value = rangeLabel;
+    const penalty = annum * years;
+    tr.querySelector('.w-range').value = range;
     tr.querySelector('.w-annum').value = fcy(annum);
     tr.querySelector('.w-p-amt').value = fcy(penalty);
     tr.querySelector('.w-total').value = fcy(amount + penalty);
-
     updateGrandTotal();
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const dateSelect = document.getElementById('date');
+    
+    // 1. GENERATE YEARS 2026 TO 2030
+    for (let yr = 2026; yr <= 2030; yr++) {
+        let opt = document.createElement('option');
+        opt.value = `1-1-${yr}`;
+        opt.textContent = yr;
+        if (yr === 2026) opt.selected = true; // Default year
+        dateSelect.appendChild(opt);
+    }
+
+    // 2. MONITOR CHANGES (Auto-update lahat ng rows)
+    dateSelect.addEventListener('change', function() {
+        const allOrDates = document.querySelectorAll('.or-date');
+        allOrDates.forEach(input => {
+            calcWithOR(input); // Re-compute bawat row
+        });
+    });
+
+    // Initial run para siguradong may laman ang table sa simula
+    const firstInput = document.querySelector('.or-date');
+    if (firstInput) calcWithOR(firstInput);
+});
+
 function calcWithoutOR(el) {
     const tr = el.closest('tr');
     const rangeInput = tr.querySelector('.wo-charge').value.trim(); 
     const av = parseNum(tr.querySelector('.wo-av').value);
     const taxRate = (parseFloat(tr.querySelector('.wo-tax-pct').value.replace('%','')) || 0) / 100;
 
+    // 1. KUNIN ANG YEAR MULA SA DROPDOWN (ID: date)
+    const dropdown = document.getElementById('date');
+    if (!dropdown) return;
+    const selectedYear = parseInt(dropdown.value.split('-').pop()); // e.g., 2026, 2027...
+
     let multiplier = 1, quarterCount = 4, year = parseInt(rangeInput);
 
+    // --- Range & Quarter Logic ---
     if (rangeInput.includes('-') && !rangeInput.includes('(')) {
         const years = rangeInput.split('-');
         multiplier = (parseInt(years[1]) - parseInt(years[0])) + 1;
     }
-
     if (rangeInput.includes('(')) {
         const m = rangeInput.match(/\((\d)-?(\d)?\)/);
         if (m) quarterCount = (parseInt(m[2] || m[1]) - parseInt(m[1])) + 1;
@@ -828,22 +879,31 @@ function calcWithoutOR(el) {
 
     const tdAmt = ((av * taxRate) * multiplier / 4) * quarterCount;
 
-    /* ===== PENALTY % FIX (AUTO vs MANUAL) ===== */
+    // 2. DYNAMIC PENALTY % FIX (SLIDING LOGIC)
     const pPctField = tr.querySelector('.wo-p-pct');
     let pPct;
 
     if (el === pPctField) {
-        // 👈 MANUAL EDIT
+        // MANUAL EDIT: Kung ikaw mismo ang nag-type sa box
         pPct = parseFloat(pPctField.value.replace('%','')) / 100 || 0;
     } else {
-        // 👈 AUTO COMPUTATION
-        pPct = (year <= 2023) ? 0.72 :
-               (year === 2024) ? 0.48 :
-               (year === 2025) ? 0.24 : 0;
+        // AUTO COMPUTATION: Sliding logic base sa selectedYear
+        // Formula: Gap ng years * 2% per month (24% per year) hanggang max 72%
+        
+        let yearGap = selectedYear - year; // Gaano na katagal ang utang?
+
+        if (yearGap >= 3) {
+            pPct = 0.72; // Max penalty (72%)
+        } else if (yearGap === 2) {
+            pPct = 0.48; // 2 years late (48%)
+        } else if (yearGap === 1) {
+            pPct = 0.24; // 1 year late (24%)
+        } else {
+            pPct = 0;    // Current year (No penalty)
+        }
 
         pPctField.value = (pPct * 100).toFixed(0) + "%";
     }
-    /* ===== END FIX ===== */
 
     const pAmt = tdAmt * pPct;
 
@@ -853,7 +913,13 @@ function calcWithoutOR(el) {
 
     updateGrandTotal();
 }
-
+document.getElementById('date').addEventListener('change', function() {
+    // I-update ang WITH OR table
+    document.querySelectorAll('.or-date').forEach(input => calcWithOR(input));
+    
+    // I-update ang WITHOUT OR table
+    document.querySelectorAll('.wo-charge').forEach(input => calcWithoutOR(input));
+});
 function updateGrandTotal() {
     let lSum = 0, bSum = 0;
     document.querySelectorAll('.land-t-field').forEach(i => lSum += parseNum(i.value));
