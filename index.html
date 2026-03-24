@@ -154,16 +154,18 @@
 <body>
 
 <div id="login-overlay">
-    <div class="login-box" style="max-width:350px;">
+    <form class="login-box" style="max-width:350px;" onsubmit="event.preventDefault(); handleLogin();">
         <h6 class="text-center fw-bold mb-3" style="color:#b22222">RPT ACCESS</h6>
         <div class="mb-2">
             <label class="form-label">Username</label>
-            <input type="text" id="loginUser" class="form-control form-control-sm"> </div>
+            <input type="text" id="loginUser" class="form-control form-control-sm" required> 
+        </div>
         <div class="mb-3">
             <label class="form-label">Password</label>
-            <input type="password" id="loginPass" class="form-control form-control-sm"> </div>
-        <button class="btn btn-dark btn-sm w-100" onclick="handleLogin()">Login</button>
-    </div>
+            <input type="password" id="loginPass" class="form-control form-control-sm" required> 
+        </div>
+        <button type="submit" class="btn btn-dark btn-sm w-100">Login</button>
+    </form>
 </div>
 <div id="home-screen" style="display:none;">
     <div class="home-box">
@@ -394,21 +396,75 @@ function formatInputCurrency(el) {
 }
 
 function handleLogin() {
-    const user = document.getElementById('loginUser').value.trim().toLowerCase(); // Updated ID
-    const pass = document.getElementById('loginPass').value.trim(); // Updated ID
-    const accounts = { "admin":"1234", "laurence":"laurence2026", "ann":"ann2026", "gil":"gil2026", "roselyn":"roselyn2026", "carl":"carl2026", "egi":"egi2026", "lenard":"lenard2026", "cj":"cj2026", "rhea":"rhea2026", "lourdes":"lourdes2026" };
+    const userField = document.getElementById('loginUser');
+    const passField = document.getElementById('loginPass');
+    const user = userField.value.trim().toLowerCase();
+    const pass = passField.value.trim();
+    
+    const accounts = { 
+        "admin":"1234", "laurence":"laurence2026", "ann":"ann2026", 
+        "gil":"gil2026", "roselyn":"roselyn2026", "carl":"carl2026", 
+        "egi":"egi2026", "lenard":"lenard2026", "cj":"cj2026", 
+        "rhea":"rhea2026", "lourdes":"lourdes2026" 
+    };
     
     if (accounts[user] && accounts[user] === pass) {
+        // SUCCESS
         CURRENT_USER = user.toUpperCase();
         document.getElementById('welcomeUser').innerText = "WELCOME: " + CURRENT_USER;
         document.getElementById('login-overlay').style.display = 'none';
-        if(user === 'admin') document.getElementById('adminPanel').style.display = 'block';
+        
+        if(user === 'admin') {
+            document.getElementById('adminPanel').style.display = 'block';
+        }
         showHome();
     } else { 
-        alert("Access Denied."); 
+        // FAIL: Notification Alert inside the login box
+        showLoginNotification("Access Denied: Invalid Credentials");
+        
+        // Clear password and focus back
+        passField.value = "";
+        passField.focus();
     }
 }
 
+// Gagawa tayo ng maliit na function para sa floating notification
+function showLoginNotification(message) {
+    // Alisin ang lumang notification kung meron man para hindi magpatung-patong
+    const oldNotify = document.getElementById('temp-notify');
+    if (oldNotify) oldNotify.remove();
+
+    const notify = document.createElement('div');
+    notify.id = 'temp-notify';
+    notify.innerText = message;
+    
+    // CSS ng Notification (Floating and Red)
+    Object.assign(notify.style, {
+        position: 'absolute',
+        top: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: '#ff4d4d',
+        color: 'white',
+        padding: '8px 15px',
+        borderRadius: '5px',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        zIndex: '1000',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+        transition: 'opacity 0.5s ease'
+    });
+
+    // Isasabit natin sa loob ng login-box
+    document.querySelector('.login-box').style.position = 'relative';
+    document.querySelector('.login-box').appendChild(notify);
+
+    // Mawawala after 2 seconds
+    setTimeout(() => {
+        notify.style.opacity = '0';
+        setTimeout(() => notify.remove(), 500);
+    }, 2000);
+}
 function safeParseJSON(str) {
     if (!str) return null;
 
