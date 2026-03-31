@@ -18,7 +18,6 @@
     box-shadow: 4px 4px 15px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
-    /* TANGGALIN ang max-height at overflow dito */
     height: auto !important; 
 }
 
@@ -204,6 +203,111 @@ legend {
         .admin-panel { background: #f8f9fa; border: 2px dashed #adb5bd; padding: 10px; margin-bottom: 15px; display: none; }
         .report-summary-box { background: white; border: 1px solid #999; padding: 15px; margin-top: 10px; font-size: 12px; }
         @media print { .d-print-none, .btn, #login-overlay, #home-screen, .admin-panel { display: none !important; } .form-container { border: none !important; box-shadow: none !important; width: 100% !important; background: white !important; display: block !important; } body { background: white !important; } fieldset { background: #fff !important; } .remarks-area { background-color: #fff !important; border: 1px solid #000 !important; } }
+    /* =========================================
+   DARK MODE VARIABLES (LABAS LANG ANG MAGBABAGO)
+   ========================================= */
+:root {
+    --bg-outside: #d1d4d7; /* Default background mo */
+}
+
+/* Mag-a-apply lang ito kapag may 'data-theme=dark' ang HTML tag */
+[data-theme="dark"] {
+    --bg-outside: #121212; /* Dark background para sa labas */
+}
+
+/* =========================================
+   MODIFIED SELECTORS PARA SA DARK MODE
+   ========================================= */
+
+/* 1. Body at Overlays: Dito lang mag-a-apply ang kulay ng Dark Mode */
+body, #login-overlay, #home-screen { 
+    background-color: var(--bg-outside) !important; 
+    transition: background-color 0.3s ease;
+}
+
+/* 2. LABELS SA LABAS: Magiging puti para mabasa sa madilim na background */
+[data-theme="dark"] label:not(.form-label), 
+[data-theme="dark"] .welcome-text,
+[data-theme="dark"] h6 {
+    color: #ffffff !important;
+}
+
+/* 3. LOCKING ORIGINAL STYLE: Sinisiguro nito na hindi magbabago ang computation boxes */
+.home-box, .login-box, .form-container {
+    background-color: #e0e0e0 !important; /* Mananatiling Light Grey */
+    color: #333 !important; 
+    border: 1px solid #999 !important;
+    box-shadow: 4px 4px 15px rgba(0,0,0,0.3);
+}
+
+/* Pinapanatili ang iyong original label color (#7f8c8d) sa loob ng box */
+.form-label { 
+    color: #7f8c8d !important; 
+}
+
+/* 4. TOGGLE BUTTON STYLE (Transparent) */
+#theme-toggle {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    margin-left: 10px;
+}
+/* =========================================
+   BLACK HIGHLIGHT PARA SA LAND COMPUTATION
+   ========================================= */
+
+/* I-target ang div gamit ang bootstrap classes nito */
+[data-theme="dark"] .bg-light.border-dark {
+    background-color: #000000 !important; /* Gagawing Solid Black */
+    border-color: #444 !important; /* Subtle gray border para hindi masyadong matalas */
+}
+
+/* Gagawing Puti ang Text (LAND COMPUTATION) */
+[data-theme="dark"] .bg-light.border-dark h6 {
+    color: #ffffff !important;
+}
+
+/* Gagawing Puti ang Label (LAND TOTAL:) */
+[data-theme="dark"] .bg-light.border-dark span {
+    color: #ffffff !important;
+}
+
+/* Para sa Input Box (0.00) para lilitaw sa itim */
+[data-theme="dark"] #landTotal {
+    background-color: #1a1a1a !important;
+    color: #ff0000 !important; /* Red text para sa total para madaling makita */
+    border: 1px solid #555 !important;
+}
+/* =========================================
+   BLACK HIGHLIGHT PARA SA BUILDING SECTION
+   ========================================= */
+
+/* I-target ang building div kapag naka-Dark Mode */
+[data-theme="dark"] .building-section .bg-light.border-danger {
+    background-color: #000000 !important; /* Solid Black Background */
+    border-color: #b22222 !important;     /* Darker Red border para sa contrast */
+}
+
+/* Gagawing Puti ang Text (BUILDING COMPUTATION) */
+[data-theme="dark"] .building-section h6.text-danger {
+    color: #ff4d4d !important; /* Lighter Red/Puti-ish Red para mabasa sa itim */
+}
+
+/* Gagawing Puti ang Label (BUILDING TOTAL:) */
+[data-theme="dark"] .building-section span.fw-bold {
+    color: #ffffff !important;
+}
+
+/* Para sa Building Total Input Box (0.00) */
+[data-theme="dark"] #buildTotal {
+    background-color: #1a1a1a !important;
+    color: #00ff00 !important; /* Neon green para sa total visibility */
+    border: 1px solid #555 !important;
+}
     </style>
 </head>
 <body>
@@ -303,6 +407,7 @@ legend {
                 <tbody id="savedList" style="font-size:11px;"></tbody>
             </table>
         </div>
+         <button id="theme-toggle" class="btn btn-sm btn-outline-secondary float-end" onclick="toggleTheme()">🌙 Dark Mode</button>
     </div>
 </div>
 
@@ -348,7 +453,7 @@ legend {
         
 
         <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light border border-dark">
-            <h6 class="mb-0 fw-bold">LAND COMPUTATION</h6>
+            <h6 class="mb-0 fw-bold";>LAND COMPUTATION</h6>
             <div class="d-flex align-items-center"><span class="fw-bold me-2">LAND TOTAL:</span><input type="text" id="landTotal" class="form-control section-total-header text-center" readonly value="0.00"></div>
         </div>
 
@@ -1123,6 +1228,7 @@ async function saveRecord() {
         saveBtn.innerText = "SAVE / UPDATE CLOUD";
     }
 }  
+
 function showInstantStatus(text) {
     const statusLabel = document.getElementById('rowDisplay');
     const originalColor = statusLabel.style.color;
@@ -1279,9 +1385,29 @@ function prepareRemarksForPDF() {
         ta.style.display = 'block';
     };
 }
+function toggleTheme() {
+    const html = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    
+    if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        btn.innerHTML = "🌙 Dark Mode";
+        localStorage.setItem('rpt-mode', 'light');
+    } else {
+        html.setAttribute('data-theme', 'dark');
+        btn.innerHTML = "☀️ Light Mode";
+        localStorage.setItem('rpt-mode', 'dark');
+    }
+}
+
+// Pag-load ng page, i-apply ang huling ginamit na theme
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('rpt-mode') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('theme-toggle').innerHTML = "☀️ Light Mode";
+    }
+});
 
 </script>
 </body>
 </html>
-
-
