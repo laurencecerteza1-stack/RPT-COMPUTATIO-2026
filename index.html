@@ -347,6 +347,24 @@ body, #login-overlay, #home-screen {
     margin-bottom: 2px;
     color: #666;
 }
+.msg-time {
+    font-size: 8px;
+    display: block;
+    margin-top: 4px;
+    opacity: 0.7;
+    text-align: right;
+}
+
+/* Kulay ng pangalan ng system */
+.msg-system {
+    align-self: center;
+    background-color: #fff3cd; /* Light Yellow */
+    color: #856404;
+    border: 1px solid #ffeeba;
+    font-style: italic;
+    font-size: 11px;
+    max-width: 90%;
+}
     </style>
 </head>
 <body>
@@ -1205,33 +1223,25 @@ async function saveRecord() {
     
     if(!lot) return alert("Lot Details required!");
 
-    // 1. LOCK BUTTON & INITIAL STATUS
     saveBtn.disabled = true;
     saveBtn.innerText = "🔍 CHECKING DUPLICATES...";
 
     try {
-        // STEP A: Kunin ang pinaka-latest na data mula sa Cloud para siguradong accurate ang check
         const resData = await fetch(CLOUD_URL);
         const currentCloudData = await resData.json();
 
-        // STEP B: I-check kung may kaparehong Lot Details
         const isDuplicate = currentCloudData.some(row =>
             row[1].toString().toUpperCase() === lot.toUpperCase() &&
             row[5].toString() !== existingRow.toString()
         );
 
-        // STEP C: ANG HARANG. Kapag duplicate, hihinto tayo dito.
         if (isDuplicate) {
-            alert("🚫 Error: Ang Lot Details na '" + lot + "' ay may record na. HINDI ito pwedeng i-save.");
-            
-            // I-reset ang button para mapindot ulit pagkatapos baguhin ang input
+            alert("🚫 Error: Ang Lot Details na '" + lot + "' ay may record na.");
             saveBtn.disabled = false;
             saveBtn.innerText = "SAVE / UPDATE CLOUD";
-            
-            return; // <<--- NAPAKAHALAGA: Ito ang magpapatigil sa pag-save
+            return; 
         }
 
-        // 2. DATA PREPARATION (Dito lang makakarating ang code kung HINDI duplicate)
         saveBtn.innerText = "🚀 SAVING...";
         const record = {
             existingRow: existingRow || null,
@@ -1257,7 +1267,7 @@ async function saveRecord() {
             body: JSON.stringify(record) 
         });
 
-        // 4. AUTO-CONVERT TO EDIT MODE (Base sa logic mo)
+        // 4. AUTO-CONVERT TO EDIT MODE
         if (!existingRow) {
             const rows = document.querySelectorAll('#savedList tr');
             let nextRow = 2; 
@@ -1270,8 +1280,29 @@ async function saveRecord() {
             document.getElementById('editStatus').style.display = "block";
         }
 
+        // --- STEP 5: AUTO-SYSTEM LOG TO CHAT (DITO MO IPAPASOK) ---
+        try {
+            const actionType = existingRow ? "UPDATED" : "ADDED NEW";
+            const systemMsg = `🤖 SYSTEM: ${CURRENT_USER} ${actionType} record for Lot: ${lot}`;
+            
+            await fetch(CHAT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                body: JSON.stringify({
+                    action: "chat",
+                    sender: "SYSTEM",
+                    message: systemMsg
+                })
+            });
+            // I-refresh ang chat display para makita agad ang log
+            if (typeof loadChats === "function") loadChats();
+        } catch (chatErr) {
+            console.log("Chat log failed, but record was saved.");
+        }
+        // -------------------------------------------------------
+
         showInstantStatus("✅ SAVED TO CLOUD");
-        await renderListFromCloud(); // Refresh list
+        await renderListFromCloud(); 
 
     } catch(e) { 
         alert("System Error: " + e.message); 
@@ -1279,7 +1310,7 @@ async function saveRecord() {
         saveBtn.disabled = false;
         saveBtn.innerText = "SAVE / UPDATE CLOUD";
     }
-}  
+}
 
 function showInstantStatus(text) {
     const statusLabel = document.getElementById('rowDisplay');
@@ -1515,37 +1546,30 @@ async function loadChats() {
         const res = await fetch(CHAT_URL + "?type=chat");
         const logs = await res.json();
         const box = document.getElementById('chatBox');
-
         if (!logs) return;
 
-        // --- STEP 3: DESKTOP NOTIFICATION ---
-        // Kung mas marami ang logs ngayon kaysa dati, ibig sabihin may bagong message
-        if (logs.length > lastChatCount && lastChatCount !== 0) {
-            const lastMsg = logs[logs.length - 1];
-            
-            // Notification alert kung hindi ikaw ang nag-send
-            if (lastMsg.sender !== CURRENT_USER && Notification.permission === 'granted') {
-                new Notification(`New Message from ${lastMsg.sender}`, {
-                    body: lastMsg.message,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/724/724715.png'
-                });
-            }
-        }
-        lastChatCount = logs.length;
-
-        // --- STEP 1: CHAT BUBBLES UI ---
         box.innerHTML = logs.map(log => {
             const isMe = log.sender === CURRENT_USER;
+            const isSystem = log.sender === "SYSTEM";
+            
+            // Format ng oras (e.g., 4:15 PM)
+            const time = log.timestamp ? new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+
+            if (isSystem) {
+                return `<div class="msg msg-system">${log.message}</div>`;
+            }
+
             return `
                 <div class="msg ${isMe ? 'msg-me' : 'msg-them'}">
                     ${!isMe ? `<span class="msg-sender">${log.sender}</span>` : ''}
                     ${log.message}
+                    <span class="msg-time">${time}</span>
                 </div>
             `;
         }).join('');
 
         box.scrollTop = box.scrollHeight;
-    } catch (e) { console.log("Syncing..."); }
+    } catch (e) { console.log("Chat sync..."); }
 }
 
 // Refresh chat every 1 seconds para mabilis
