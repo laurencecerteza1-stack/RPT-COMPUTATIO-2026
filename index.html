@@ -1426,71 +1426,75 @@ document.getElementById('chatInput').addEventListener('keypress', function (e) {
         sendChat();}
 });
 
+// --- 2. OPTIMIZED SEND CHAT (INSTANT) ---
 async function sendChat() {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
     if (!msg) return;
 
-    // GAMITIN MO ITO: Ang variable na 'CURRENT_USER' mo na mismo
-    // Ito yung variable na ginamit mo sa document.getElementById('welcomeUser').innerText
-    const sender = CURRENT_USER || "User"; 
+    const box = document.getElementById('chatBox');
+    const sender = typeof CURRENT_USER !== 'undefined' ? CURRENT_USER : "User";
 
-    const payload = {
-        action: "chat",
-        sender: sender,
-        message: msg
-    };
+    // OPTIMISTIC UPDATE: Ipakita agad sa box bago i-save
+    const tempDiv = document.createElement('div');
+    tempDiv.style.marginBottom = "5px";
+    tempDiv.style.paddingBottom = "2px";
+    tempDiv.style.borderBottom = "1px solid #eee";
+    tempDiv.style.opacity = "0.6"; // Malabo habang nag-sesend
+    tempDiv.innerHTML = `<b style="color: #2980b9;">${sender}:</b> <span>${msg}</span>`;
+    box.appendChild(tempDiv);
+    
+    // Auto-scroll sa huli
+    box.scrollTop = box.scrollHeight;
+    
+    // Linisin agad ang input box para sa susunod na message
+    input.value = "";
 
     try {
+        // I-send sa Google Sheets sa background
         await fetch(CHAT_URL, { 
             method: "POST",
             mode: "no-cors",
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                action: "chat",
+                sender: sender,
+                message: msg
+            })
         });
-        input.value = ""; 
-        loadChats(); 
+        
+        // Pag success, gawing solid ang kulay
+        tempDiv.style.opacity = "1"; 
     } catch (e) {
-        console.error("Chat error:", e);
+        console.error("Chat Error:", e);
+        tempDiv.innerHTML += ` <small style="color:red;">(Failed)</small>`;
     }
 }
+// --- 3. LOAD CHAT HISTORY ---
 async function loadChats() {
-    const box = document.getElementById('chatBox');
-    
     try {
-        // Siguraduhing CHAT_URL ang gamit dito
         const res = await fetch(CHAT_URL + "?type=chat");
-        
-        // I-check kung valid ang response
-        if (!res.ok) throw new Error("Fetch failed");
-        
         const logs = await res.json();
+        const box = document.getElementById('chatBox');
 
-        if (!logs || logs.length === 0) {
-            box.innerHTML = '<div class="text-muted text-center" style="font-size:10px;">No messages yet.</div>';
-            return;
-        }
+        if (!logs || logs.length === 0) return;
 
-        // Render ang messages
+        // Render lahat ng messages
         box.innerHTML = logs.map(log => `
             <div style="margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 2px;">
-                <b style="color: #2980b9;">${log.sender || "User"}:</b> 
-                <span>${log.message || ""}</span>
+                <b style="color: #2980b9;">${log.sender}:</b> 
+                <span>${log.message}</span>
             </div>
         `).join('');
 
-        // Auto-scroll sa pinakababa
         box.scrollTop = box.scrollHeight;
-
     } catch (e) {
-        console.error("Chat load error:", e);
-        box.innerHTML = '<div class="text-danger text-center" style="font-size:10px;">Connection Error</div>';
+        console.log("Chat sync...");
     }
 }
 
-// Tawagin ang loading function sa simula
+// Refresh chat every 1 seconds para mabilis
+setInterval(loadChats,1000);
 document.addEventListener('DOMContentLoaded', loadChats);
-// Auto-refresh kada 0.5 segundo
-setInterval(loadChats, 500);
 </script>
 </body>
 </html>
