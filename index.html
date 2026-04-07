@@ -308,6 +308,45 @@ body, #login-overlay, #home-screen {
     color: #00ff00 !important; /* Neon green para sa total visibility */
     border: 1px solid #555 !important;
 }
+#chatBox {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+.msg {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    line-height: 1.4;
+    position: relative;
+}
+
+/* Pag ikaw ang nag-send (Nasa Kanan) */
+.msg-me {
+    align-self: flex-end;
+    background-color: #007bff;
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+/* Pag ibang team member (Nasa Kaliwa) */
+.msg-them {
+    align-self: flex-start;
+    background-color: #e9ecef;
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
+
+.msg-sender {
+    font-size: 10px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 2px;
+    color: #666;
+}
     </style>
 </head>
 <body>
@@ -1469,32 +1508,54 @@ async function sendChat() {
         tempDiv.innerHTML += ` <small style="color:red;">(Failed)</small>`;
     }
 }
-// --- 3. LOAD CHAT HISTORY ---
+let lastChatCount = 0; // Para malaman kung may bagong message
+
 async function loadChats() {
     try {
         const res = await fetch(CHAT_URL + "?type=chat");
         const logs = await res.json();
         const box = document.getElementById('chatBox');
 
-        if (!logs || logs.length === 0) return;
+        if (!logs) return;
 
-        // Render lahat ng messages
-        box.innerHTML = logs.map(log => `
-            <div style="margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 2px;">
-                <b style="color: #2980b9;">${log.sender}:</b> 
-                <span>${log.message}</span>
-            </div>
-        `).join('');
+        // --- STEP 3: DESKTOP NOTIFICATION ---
+        // Kung mas marami ang logs ngayon kaysa dati, ibig sabihin may bagong message
+        if (logs.length > lastChatCount && lastChatCount !== 0) {
+            const lastMsg = logs[logs.length - 1];
+            
+            // Notification alert kung hindi ikaw ang nag-send
+            if (lastMsg.sender !== CURRENT_USER && Notification.permission === 'granted') {
+                new Notification(`New Message from ${lastMsg.sender}`, {
+                    body: lastMsg.message,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/724/724715.png'
+                });
+            }
+        }
+        lastChatCount = logs.length;
+
+        // --- STEP 1: CHAT BUBBLES UI ---
+        box.innerHTML = logs.map(log => {
+            const isMe = log.sender === CURRENT_USER;
+            return `
+                <div class="msg ${isMe ? 'msg-me' : 'msg-them'}">
+                    ${!isMe ? `<span class="msg-sender">${log.sender}</span>` : ''}
+                    ${log.message}
+                </div>
+            `;
+        }).join('');
 
         box.scrollTop = box.scrollHeight;
-    } catch (e) {
-        console.log("Chat sync...");
-    }
+    } catch (e) { console.log("Syncing..."); }
 }
 
 // Refresh chat every 1 seconds para mabilis
 setInterval(loadChats,1000);
 document.addEventListener('DOMContentLoaded', loadChats);
+document.addEventListener('DOMContentLoaded', () => {
+    if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+    }
+});
 </script>
 </body>
 </html>
