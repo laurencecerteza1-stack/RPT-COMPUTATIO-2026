@@ -386,6 +386,7 @@ body, #login-overlay, #home-screen {
 
     </div>
 </div>
+
 <!-- =========================================================== -->
 
 
@@ -409,7 +410,18 @@ body, #login-overlay, #home-screen {
         </div>
          <button id="theme-toggle" class="btn btn-sm btn-outline-secondary float-end" onclick="toggleTheme()">🌙 Dark Mode</button>
     </div>
+    <div id="chatSection" class="mt-4 p-2 border-top border-dark">
+    <h6 class="fw-bold"><i class="fas fa-comments"></i> TEAM CHAT</h6>
+    <div id="chatBox" style="height: 200px; overflow-y: auto; background: #f8f9fa; border-radius: 5px; padding: 10px; font-size: 12px; border: 1px solid #ccc;">
+        <div class="text-muted text-center">Loading chat...</div>
+    </div>
+    <div class="input-group mt-2">
+        <input type="text" id="chatInput" class="form-control form-control-sm" placeholder="Type a message...">
+       <button class="btn btn-primary" onclick="sendChat()">Send</button>
+    </div>
 </div>
+</div>
+
 
 <div class="form-container" id="printable-area">
     <div class="d-print-none mb-2 border-bottom pb-2 d-flex justify-content-between align-items-center">
@@ -526,8 +538,9 @@ body, #login-overlay, #home-screen {
 
 <script>
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxjWCwdUid2jTgW2p43gLTd07i-3T-cTYsokJy8vhW3syxDCSfwAFESw6BmveWZ1fG7iA/exec";
+// Palitan mo ito ng bagong URL na nakuha mo sa deployment
 let CURRENT_USER = "";
-
+const CHAT_URL = "https://script.google.com/macros/s/AKfycbzDvKoHE76n_N0Jfpc8oIXc4V7WJHy68Kw1AgpkXM6PAlU6f5ih6JOeHXx0SG7NPJuX/exec";
 const TAX_DATABASE = {"AAM": "BRANCH", "ACD": "BRANCH", "ACE": "2%", "ACL001": "5%", "ACL002": "3.50%", "ACM": "3%", "ACN": "2%", "ACR": "3%", "AED": "BRANCH", "AGL": "2.50%", "AMC": "3%", "AME": "2%", "AMS": "2%", "AMV": "3%", "AVA": "2.50%", "AVS": "2%", "AVT": "2%", "BBE": "3%", "BHS": "5%", "BME": "2.50%", "BPR": "2%", "BRB": "2%", "BRM": "BRANCH", "CCL": "2%", "CDB": "5%", "CDE": "3%", "CDS": "BRANCH", "CGL": "2%", "CHR": "2%", "CLB": "2%", "CLP": "NO TD", "CMD": "BRANCH", "CMS": "2%", "CPB": "2%", "CRC": "2%", "CRE": "3%", "CSG": "2%", "CTL": "2%", "CUE": "2.50%", "CVA": "2.50%", "CVB": "2.10%", "CVC": "2%", "CVF": "4%", "CVL": "2%", "CVS": "2.10%", "CVY": "2%", "DAR": "3%", "DCS": "2%", "DJR": "2%", "EAS": "2%", "EBA": "2%", "EGC": "2%", "EGE": "2.50%", "EGV": "2%", "EPV": "2%", "ERE": "2%", "ERV": "2%", "GBB": "NO TD", "GHP": "2%", "GLN": "2%", "GMB": "2%", "GMD": "2%", "GME": "2.50%", "GMI": "BRANCH", "GMN": "2%", "GMT": "2%", "GPH": "2%", "GPP": "3%", "GPS": "2%", "GPT": "2%", "GRE": "2%", "GRT": "2%", "GRV": "3%", "GTE": "2%", "GVB": "2%", "GVW": "3%", "GWB": "2.10%", "GWE": "2.50%", "GWN": "2%", "GWS": "2.50%", "HRA": "2%", "HSP": "4%", "HVI": "BRANCH", "KVH": "2.50%", "LAN": "BRANCH", "LAP": "2%", "LBT": "DON'T COU", "LCE": "BRANCH", "LHC": "2%", "LHL": "2.60%", "LMR": "2.10%", "LMV": "BRANCH", "LPR": "3%", "LRC": "2%", "LRE": "2%", "LRS": "NO TD", "LRT": "BRANCH", "LSC": "NO TD", "LVE": "2%", "LWC": "2%", "LWE": "2%", "MBD": "BRANCH", "MGS": "2%", "MIE": "5%", "MLL": "2%", "MMR": "2%", "MNV": "2%", "MPE": "2%", "MPG": "2%", "MPN": "2.10%", "MPS": "2%", "MRD": "BRANCH", "MRE": "2.50%", "MRP": "4%", "MRT": "2%", "MSV": "2%", "MVB": "2.10%", "MVD": "BRANCH", "MVE": "2%", "MVM": "NO TD", "MVT": "2%", "MWE": "2%", "NCB": "2%", "NHC": "BRANCH", "NPB": "NO TD", "NPC": "2.50%", "NPE": "3%", "NVI": "BRANCH", "NVM": "NO TD", "NVP": "NO TD", "NVT": "2%", "NWE": "3%", "ORD": "BRANCH", "ORE": "2%", "ORO": "5%", "OTP": "2.50%", "OVG": "2.50%", "PAE": "2%", "PAL": "2%", "PCE": "2.50%", "PDP": "2%", "PDS": "2.50%", "PGS": "2.50%", "PHB": "2.10%", "PHS": "2.50%", "PRL": "2%", "PVB": "2.50%", "PVD": "BRANCH", "PVE": "2.50%", "PVH": "2.50%", "PVR": "2%", "PVS": "2.50%", "PWE": "2.50%", "PWG": "3%", "RDC": "2%", "RIZ": "2%", "RME": "2%", "RMS": "2%", "RNW": "2.10%", "RVC": "2%", "RWT": "2%", "SBP": "3%", "SBR": "3%", "SCB": "2%", "SCD": "2%", "SCL": "2%", "SCS": "NO TD", "SFE": "2%", "SGB": "3%", "SGD": "BRANCH", "SGE": "", "SGI": "BRANCH", "SGK": "2.50%", "SGP": "NO TD", "SHE": "2.50%", "SLE": "2.50%", "SLR": "2%", "SMD": "BRANCH", "SOD": "BRANCH", "SPE": "2%", "SPL": "2%", "SSE": "2%", "SSL": "2%", "STG": "2.50%", "STR": "2%", "STT": "2%", "SVD": "BRANCH", "SVR": "3%", "TES": "2%", "TGE": "3%", "TVT": "2%", "VCH": "2.50%", "VCT": "2%", "VPE": "2.50%", "VPP": "2.50%", "VRC": "3.50%", "VTM": "BRANCH", "VVA": "2%", "VVA/2": "2%", "VVD": "BRANCH", "VVE": "2.50%", "VVL": "5%", "VVM": "5%", "VVN": "2.50%", "VVQ": "2.50%", "VVR": "2%", "VVS": "2%", "VVW": "2.50%", "VWR": "2%", "WGV": "3%", "WRI": "BRANCH", "WRM": "5%", "YSR": "2%", "W": "2%"};
 
 function getTaxInfo(lotText) {
@@ -1407,7 +1420,77 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('theme-toggle').innerHTML = "☀️ Light Mode";
     }
 });
+// 1. Enter Key Listener
+document.getElementById('chatInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        sendChat();}
+});
 
+async function sendChat() {
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    // GAMITIN MO ITO: Ang variable na 'CURRENT_USER' mo na mismo
+    // Ito yung variable na ginamit mo sa document.getElementById('welcomeUser').innerText
+    const sender = CURRENT_USER || "User"; 
+
+    const payload = {
+        action: "chat",
+        sender: sender,
+        message: msg
+    };
+
+    try {
+        await fetch(CHAT_URL, { 
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify(payload)
+        });
+        input.value = ""; 
+        loadChats(); 
+    } catch (e) {
+        console.error("Chat error:", e);
+    }
+}
+async function loadChats() {
+    const box = document.getElementById('chatBox');
+    
+    try {
+        // Siguraduhing CHAT_URL ang gamit dito
+        const res = await fetch(CHAT_URL + "?type=chat");
+        
+        // I-check kung valid ang response
+        if (!res.ok) throw new Error("Fetch failed");
+        
+        const logs = await res.json();
+
+        if (!logs || logs.length === 0) {
+            box.innerHTML = '<div class="text-muted text-center" style="font-size:10px;">No messages yet.</div>';
+            return;
+        }
+
+        // Render ang messages
+        box.innerHTML = logs.map(log => `
+            <div style="margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 2px;">
+                <b style="color: #2980b9;">${log.sender || "User"}:</b> 
+                <span>${log.message || ""}</span>
+            </div>
+        `).join('');
+
+        // Auto-scroll sa pinakababa
+        box.scrollTop = box.scrollHeight;
+
+    } catch (e) {
+        console.error("Chat load error:", e);
+        box.innerHTML = '<div class="text-danger text-center" style="font-size:10px;">Connection Error</div>';
+    }
+}
+
+// Tawagin ang loading function sa simula
+document.addEventListener('DOMContentLoaded', loadChats);
+// Auto-refresh kada 0.5 segundo
+setInterval(loadChats, 500);
 </script>
 </body>
 </html>
