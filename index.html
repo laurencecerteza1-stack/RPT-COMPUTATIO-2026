@@ -369,6 +369,10 @@ body, #login-overlay, #home-screen {
     font-style: italic;
     font-size: 11px;
     max-width: 90%;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 0.85em;
 }
     </style>
 </head>
@@ -602,7 +606,7 @@ body, #login-overlay, #home-screen {
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxjWCwdUid2jTgW2p43gLTd07i-3T-cTYsokJy8vhW3syxDCSfwAFESw6BmveWZ1fG7iA/exec";
 // Palitan mo ito ng bagong URL na nakuha mo sa deployment
 let CURRENT_USER = "";
-const CHAT_URL = "https://script.google.com/macros/s/AKfycbyYWTEHnusaUT1vNR8lLOn5MklNAkwDV96B5kK30eRtCcjaGwu4py6Hn6HTaVoCL7bh/exec";
+const CHAT_URL = "https://script.google.com/macros/s/AKfycbzDvKoHE76n_N0Jfpc8oIXc4V7WJHy68Kw1AgpkXM6PAlU6f5ih6JOeHXx0SG7NPJuX/exec";
 const TAX_DATABASE = {"AAM": "BRANCH", "ACD": "BRANCH", "ACE": "2%", "ACL001": "5%", "ACL002": "3.50%", "ACM": "3%", "ACN": "2%", "ACR": "3%", "AED": "BRANCH", "AGL": "2.50%", "AMC": "3%", "AME": "2%", "AMS": "2%", "AMV": "3%", "AVA": "2.50%", "AVS": "2%", "AVT": "2%", "BBE": "3%", "BHS": "5%", "BME": "2.50%", "BPR": "2%", "BRB": "2%", "BRM": "BRANCH", "CCL": "2%", "CDB": "5%", "CDE": "3%", "CDS": "BRANCH", "CGL": "2%", "CHR": "2%", "CLB": "2%", "CLP": "NO TD", "CMD": "BRANCH", "CMS": "2%", "CPB": "2%", "CRC": "2%", "CRE": "3%", "CSG": "2%", "CTL": "2%", "CUE": "2.50%", "CVA": "2.50%", "CVB": "2.10%", "CVC": "2%", "CVF": "4%", "CVL": "2%", "CVS": "2.10%", "CVY": "2%", "DAR": "3%", "DCS": "2%", "DJR": "2%", "EAS": "2%", "EBA": "2%", "EGC": "2%", "EGE": "2.50%", "EGV": "2%", "EPV": "2%", "ERE": "2%", "ERV": "2%", "GBB": "NO TD", "GHP": "2%", "GLN": "2%", "GMB": "2%", "GMD": "2%", "GME": "2.50%", "GMI": "BRANCH", "GMN": "2%", "GMT": "2%", "GPH": "2%", "GPP": "3%", "GPS": "2%", "GPT": "2%", "GRE": "2%", "GRT": "2%", "GRV": "3%", "GTE": "2%", "GVB": "2%", "GVW": "3%", "GWB": "2.10%", "GWE": "2.50%", "GWN": "2%", "GWS": "2.50%", "HRA": "2%", "HSP": "4%", "HVI": "BRANCH", "KVH": "2.50%", "LAN": "BRANCH", "LAP": "2%", "LBT": "DON'T COU", "LCE": "BRANCH", "LHC": "2%", "LHL": "2.60%", "LMR": "2.10%", "LMV": "BRANCH", "LPR": "3%", "LRC": "2%", "LRE": "2%", "LRS": "NO TD", "LRT": "BRANCH", "LSC": "NO TD", "LVE": "2%", "LWC": "2%", "LWE": "2%", "MBD": "BRANCH", "MGS": "2%", "MIE": "5%", "MLL": "2%", "MMR": "2%", "MNV": "2%", "MPE": "2%", "MPG": "2%", "MPN": "2.10%", "MPS": "2%", "MRD": "BRANCH", "MRE": "2.50%", "MRP": "4%", "MRT": "2%", "MSV": "2%", "MVB": "2.10%", "MVD": "BRANCH", "MVE": "2%", "MVM": "NO TD", "MVT": "2%", "MWE": "2%", "NCB": "2%", "NHC": "BRANCH", "NPB": "NO TD", "NPC": "2.50%", "NPE": "3%", "NVI": "BRANCH", "NVM": "NO TD", "NVP": "NO TD", "NVT": "2%", "NWE": "3%", "ORD": "BRANCH", "ORE": "2%", "ORO": "5%", "OTP": "2.50%", "OVG": "2.50%", "PAE": "2%", "PAL": "2%", "PCE": "2.50%", "PDP": "2%", "PDS": "2.50%", "PGS": "2.50%", "PHB": "2.10%", "PHS": "2.50%", "PRL": "2%", "PVB": "2.50%", "PVD": "BRANCH", "PVE": "2.50%", "PVH": "2.50%", "PVR": "2%", "PVS": "2.50%", "PWE": "2.50%", "PWG": "3%", "RDC": "2%", "RIZ": "2%", "RME": "2%", "RMS": "2%", "RNW": "2.10%", "RVC": "2%", "RWT": "2%", "SBP": "3%", "SBR": "3%", "SCB": "2%", "SCD": "2%", "SCL": "2%", "SCS": "NO TD", "SFE": "2%", "SGB": "3%", "SGD": "BRANCH", "SGE": "", "SGI": "BRANCH", "SGK": "2.50%", "SGP": "NO TD", "SHE": "2.50%", "SLE": "2.50%", "SLR": "2%", "SMD": "BRANCH", "SOD": "BRANCH", "SPE": "2%", "SPL": "2%", "SSE": "2%", "SSL": "2%", "STG": "2.50%", "STR": "2%", "STT": "2%", "SVD": "BRANCH", "SVR": "3%", "TES": "2%", "TGE": "3%", "TVT": "2%", "VCH": "2.50%", "VCT": "2%", "VPE": "2.50%", "VPP": "2.50%", "VRC": "3.50%", "VTM": "BRANCH", "VVA": "2%", "VVA/2": "2%", "VVD": "BRANCH", "VVE": "2.50%", "VVL": "5%", "VVM": "5%", "VVN": "2.50%", "VVQ": "2.50%", "VVR": "2%", "VVS": "2%", "VVW": "2.50%", "VWR": "2%", "WGV": "3%", "WRI": "BRANCH", "WRM": "5%", "YSR": "2%", "W": "2%"};
 
 function getTaxInfo(lotText) {
@@ -921,21 +925,26 @@ function createNew() {
 
 async function renderListFromCloud() {
     const list = document.getElementById('savedList'); 
-    const container = list.closest('.table-responsive') || list.parentElement.parentElement;
+    list.innerHTML = "<tr><td colspan='5' class='text-center'>Loading...</td></tr>";
 
     try {
-        // Tandaan ang pwesto para hindi tumalon ang scroll
-        const currentScrollPos = container.scrollTop;
-
         const res = await fetch(CLOUD_URL); 
         const data = await res.json();
         
+        // Gagamit tayo ng temporary container para isang beses lang i-update ang screen
         const fragment = document.createDocumentFragment();
+        list.innerHTML = ""; 
 
-        if (!data || data.length === 0) return; // Wag galawin ang table kung walang data
+        if (!data || data.length === 0) {
+            list.innerHTML = "<tr><td colspan='5' class='text-center'>No data found.</td></tr>";
+            return [];
+        }
 
         data.forEach((row) => {
             const tr = document.createElement('tr');
+            
+            // DITO ANG SIKRETO NG BILIS: 
+            // I-store ang search keywords sa attribute para CSS na ang mag-filter later.
             const searchKey = `${row[1]} ${row[2]}`.toUpperCase(); 
             tr.setAttribute('data-search', searchKey);
 
@@ -959,24 +968,19 @@ async function renderListFromCloud() {
             fragment.appendChild(tr);
         });
 
-        // "Kusang" lilitaw ang bago dito:
-        list.innerHTML = ""; 
+        // Isang bagsakan na pag-load sa table (Instant rendering!)
         list.appendChild(fragment);
 
-        // Ibalik ang scroll para hindi istorbo sa pagbabasa
-        container.scrollTop = currentScrollPos;
-
+        // I-setup ang mga edit buttons
         attachEditListeners();
+
+        return data; 
     } catch(e) { 
-        console.error("Sync Error");
+        console.error("Fetch Error:", e);
+        list.innerHTML = "<tr><td colspan='5' class='text-center text-danger'>Sync Error.</td></tr>"; 
+        return []; 
     }
 }
-// Gawin nating automatic ang pag-check ng bagong records kada 0.5 seconds
-setInterval(renderListFromCloud, 500);
-
-// I-load din agad pagbukas ng page
-document.addEventListener('DOMContentLoaded', renderListFromCloud);
-
 
 // Hiwalay na function para sa click listeners para malinis
 function attachEditListeners() {
@@ -1585,8 +1589,8 @@ async function loadChats() {
         console.log("Chat sync error..."); 
     }
 }
-// Refresh chat every 0.5 second para mabilis
-setInterval(loadChats,500);
+// Refresh chat every 1 seconds para mabilis
+setInterval(loadChats,1000);
 document.addEventListener('DOMContentLoaded', loadChats);
 document.addEventListener('DOMContentLoaded', () => {
     if (Notification.permission !== 'granted') {
