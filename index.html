@@ -374,6 +374,38 @@ body, #login-overlay, #home-screen {
     text-align: center;
     font-size: 0.85em;
 }
+.stats-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    flex: 1;
+    min-width: 150px;
+    border-left: 5px solid #007bff; /* Blue line */
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.85em;
+    color: #666;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5em;
+    font-weight: 800;
+    color: #333;
+    margin-top: 5px;
+}
     </style>
 </head>
 <body>
@@ -454,8 +486,16 @@ body, #login-overlay, #home-screen {
 </div>
 
 <!-- =========================================================== -->
-
-
+<div class="stats-container">
+    <div class="stat-card">
+        <span class="stat-label">Total Records</span>
+        <span id="totalRecords" class="stat-value">0</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Grand Total</span>
+        <span id="sumTotal" class="stat-value">₱0.00</span>
+    </div>
+</div>
         <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
             <h5 class="fw-bold mb-0 text-dark">RPT COMPUTATION DATABASE</h5>
             <div class="d-flex align-items-center">
@@ -931,6 +971,9 @@ async function renderListFromCloud() {
         const res = await fetch(CLOUD_URL); 
         const data = await res.json();
         
+        // --- DITO NATIN TINAWAG ANG DASHBOARD STATS ---
+        updateDashboardStats(data);
+        
         // Gagamit tayo ng temporary container para isang beses lang i-update ang screen
         const fragment = document.createDocumentFragment();
         list.innerHTML = ""; 
@@ -980,6 +1023,38 @@ async function renderListFromCloud() {
         list.innerHTML = "<tr><td colspan='5' class='text-center text-danger'>Sync Error.</td></tr>"; 
         return []; 
     }
+}
+
+// I-paste mo rin itong supporting function para sa stats computation
+function updateDashboardStats(data) {
+    if (!data || !Array.isArray(data)) return;
+
+    let totalCount = data.length;
+    let todayCount = 0;
+    let grandSum = 0;
+
+    const now = new Date();
+    const todayStr = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+
+    data.forEach(row => {
+        // Grand Total: Index 3
+        let val = row[3] ? row[3].toString().replace(/[₱,]/g, '') : "0";
+        grandSum += parseFloat(val) || 0;
+
+        // Today's Entry: Index 0
+        if (row[0] && row[0].includes(todayStr)) {
+            todayCount++;
+        }
+    });
+
+    // Update the UI cards
+    const totalEl = document.getElementById('totalRecords');
+    const todayEl = document.getElementById('todayRecords');
+    const sumEl = document.getElementById('sumTotal');
+
+    if (totalEl) totalEl.innerText = totalCount;
+    if (todayEl) todayEl.innerText = todayCount;
+    if (sumEl) sumEl.innerText = "₱" + grandSum.toLocaleString(undefined, {minimumFractionDigits: 2});
 }
 
 // Hiwalay na function para sa click listeners para malinis
@@ -1597,6 +1672,50 @@ document.addEventListener('DOMContentLoaded', () => {
         Notification.requestPermission();
     }
 });
+function updateDashboardStats(data) {
+    if (!data || !Array.isArray(data) || data.length === 0) return;
+
+    let totalCount = data.length;
+    let todayCount = 0;
+    let grandSum = 0;
+
+    // 1. KUNIN NATIN ANG PETSA NGAYON (Format: 4/8/2026)
+    // Tayo mismo ang bubuo ng string para sigurado
+    const now = new Date();
+    const mm = now.getMonth() + 1;
+    const dd = now.getDate();
+    const yyyy = now.getFullYear();
+    const todayString = `${mm}/${dd}/${yyyy}`; // Ito ay magiging "4/8/2026"
+
+    data.forEach(row => {
+        // --- COMPUTE GRAND TOTAL (Index 3) ---
+        let val = row[3] ? row[3].toString().replace(/[₱,]/g, '') : "0";
+        grandSum += parseFloat(val) || 0;
+
+        // --- COMPUTE TODAY'S ENTRY (Index 0) ---
+        if (row[0]) {
+            const cellDate = row[0].toString();
+            // I-check kung ang "4/8/2026" ay nandoon sa loob ng cell text
+            if (cellDate.includes(todayString)) {
+                todayCount++;
+            }
+        }
+    });
+
+    // 2. I-UPDATE ANG MGA CARDS SA SCREEN
+    const totalEl = document.getElementById('totalRecords');
+    const todayEl = document.getElementById('todayRecords');
+    const sumEl = document.getElementById('sumTotal');
+
+    if (totalEl) totalEl.innerText = totalCount.toLocaleString();
+    if (todayEl) todayEl.innerText = todayCount.toLocaleString();
+    if (sumEl) {
+        sumEl.innerText = "₱" + grandSum.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+}
 </script>
 </body>
 </html>
